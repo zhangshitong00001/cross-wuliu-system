@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跨境物流管理系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --sidebar-width: 260px;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            color: #fff;
+            z-index: 1000;
+            overflow-y: auto;
+            transition: all 0.3s;
+        }
+        .sidebar-brand {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar-brand i {
+            color: #3b82f6;
+            font-size: 24px;
+        }
+        .sidebar-menu {
+            padding: 10px 0;
+        }
+        .menu-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            border-left: 3px solid transparent;
+        }
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-left-color: #3b82f6;
+        }
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+        }
+        .menu-sub {
+            padding-left: 20px;
+            display: none;
+        }
+        .menu-sub.show {
+            display: block;
+        }
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .top-bar {
+            background: #fff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+        }
+        .login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);
+        }
+        .login-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 40px;
+            width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .login-title {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-title h2 {
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .login-title p {
+            color: #64748b;
+            margin-top: 5px;
+        }
+        .table th {
+            background: #f8fafc;
+            font-weight: 600;
+        }
+        .badge-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .content-panel {
+            display: none;
+        }
+        .content-panel.active {
+            display: block;
+        }
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                overflow: hidden;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 登录页面 -->
+        <div id="loginPage" class="login-page" v-if="!isLoggedIn">
+            <div class="login-card">
+                <div class="login-title">
+                    <i class="fas fa-ship" style="font-size: 48px; color: #3b82f6; margin-bottom: 15px;"></i>
+                    <h2>跨境物流管理系统</h2>
+                    <p>Cross-Border Logistics Management System</p>
+                </div>
+                <form @submit.prevent="handleLogin">
+                    <div class="mb-3">
+                        <label class="form-label">用户名</label>
+                        <input type="text" class="form-control form-control-lg" v-model="loginForm.username" placeholder="请输入用户名" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">密码</label>
+                        <input type="password" class="form-control form-control-lg" v-model="loginForm.password" placeholder="请输入密码" required>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" v-model="loginForm.remember">
+                        <label class="form-check-label">记住我</label>
+                    </div>
+                    <div class="alert alert-danger" v-if="loginError">{{ loginError }}</div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100" :disabled="loginLoading">
+                        <span v-if="loginLoading" class="spinner-border spinner-border-sm"></span>
+                        <span v-else>登 录</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 主界面 -->
+        <div v-else>
+            <!-- 侧边栏 -->
+            <div class="sidebar">
+                <div class="sidebar-brand">
+                    <i class="fas fa-ship"></i>
+                    <span>跨境物流系统</span>
+                </div>
+                <div class="sidebar-menu">
+                    <a class="menu-item" :class="{active: currentPage === 'dashboard'}" @click="navigate('dashboard')">
+                        <i class="fas fa-chart-pie"></i> 仪表盘
+                    </a>
+                    
+                    <div class="menu-item" @click="toggleSubmenu('warehouse')">
+                        <i class="fas fa-warehouse"></i> 云仓集货管理
+                        <i class="fas fa-chevron-down ms-auto" style="font-size: 12px;"></i>
+                    </div>
+                    <div class="menu-sub" :class="{show: openSubmenus.warehouse}">
+                        <a class="menu-item" :class="{active: currentPage === 'warehouse-receipt'}" @click="navigate('warehouse-receipt')">收货登记</a>
+                        <a class="menu-item" :class="{active: currentPage === 'warehouse-inventory'}" @click="navigate('warehouse-inventory')">库存管理</a>
+                        <a class="menu-item" :class="{active: currentPage === 'warehouse-batch'}" @click="navigate('warehouse-batch')">批次管理</a>
+                    </div>
+
+                    <div class="menu-item" @click="toggleSubmenu('sorting')">
+                        <i class="fas fa-sort-amount-up"></i> 分装管理
+                        <i class="fas fa-chevron-down ms-auto" style="font-size: 12px;"></i>
+                    </div>
+                    <div class="menu-sub" :class="{show: openSubmenus.sorting}">
+                        <a class="menu-item" :class="{active: currentPage === 'sorting-points'}" @click="navigate('sorting-points')">收件点管理</a>
+                        <a class="menu-item" :class="{active: currentPage === 'sorting-tasks'}" @click="navigate('sorting-tasks')">分装任务</a>
+                    </div>
+
+                    <a class="menu-item" :class="{active: currentPage === 'documents'}" @click="navigate('documents')">
+                        <i class="fas fa-file-alt"></i> 文件生成管理
+                    </a>
+                    
+                    <div class="menu-item" @click="toggleSubmenu('transport')">
+                        <i class="fas fa-truck"></i> 装车运输管理
+                        <i class="fas fa-chevron-down ms-auto" style="font-size: 12px;"></i>
+                    </div>
+                    <div class="menu-sub" :class="{show: openSubmenus.transport}">
+                        <a class="menu-item" :class="{active: currentPage === 'transport-tasks'}" @click="navigate('transport-tasks')">运输任务</a>
+                        <a class="menu-item" :class="{active: currentPage === 'transport-vehicles'}" @click="navigate('transport-vehicles')">车辆管理</a>
+                    </div>
+
+                    <a class="menu-item" :class="{active: currentPage === 'customs'}" @click="navigate('customs')">
+                        <i class="fas fa-passport"></i> 出口报关管理
+                    </a>
+                    <a class="menu-item" :class="{active: currentPage === 'clearance'}" @click="navigate('clearance')">
+                        <i class="fas fa-clipboard-check"></i> 进口清关管理
+                    </a>
+                    <a class="menu-item" :class="{active: currentPage === 'port-transport'}" @click="navigate('port-transport')">
+                        <i class="fas fa-road"></i> 口岸运输管理
+                    </a>
+                    <a class="menu-item" :class="{active: currentPage === 'distribution'}" @click="navigate('distribution')">
+                        <i class="fas fa-truck-fast"></i> 收件点配送管理
+                    </a>
+                    <a class="menu-item" :class="{active: currentPage === 'sign'}" @click="navigate('sign')">
+                        <i class="fas fa-signature"></i> 签收入库管理
+                    </a>
+
+                    <div class="menu-item" @click="toggleSubmenu('finance')">
+                        <i class="fas fa-coins"></i> 财务结算
+                        <i class="fas fa-chevron-down ms-auto" style="font-size: 12px;"></i>
+                    </div>
+                    <div class="menu-sub" :class="{show: openSubmenus.finance}">
+                        <a class="menu-item" :class="{active: currentPage === 'reconciliation'}" @click="navigate('reconciliation')">对账管理</a>
+                        <a class="menu-item" :class="{active: currentPage === 'settlement'}" @click="navigate('settlement')">资金结算</a>
+                        <a class="menu-item" :class="{active: currentPage === 'payment'}" @click="navigate('payment')">支付开票</a>
+                    </div>
+
+                    <a class="menu-item" :class="{active: currentPage === 'tracking'}" @click="navigate('tracking')">
+                        <i class="fas fa-search-location"></i> 物流跟踪
+                    </a>
+                    <a class="menu-item" :class="{active: currentPage === 'alerts'}" @click="navigate('alerts')">
+                        <i class="fas fa-bell"></i> 异常预警
+                    </a>
+                    <a class="menu-item" :class="{active: currentPage === 'charging'}" @click="navigate('charging')">
+                        <i class="fas fa-calculator"></i> 计费规则
+                    </a>
+                    <a class="menu-item" :class="{active: currentPage === 'users'}" @click="navigate('users')">
+                        <i class="fas fa-users-cog"></i> 用户管理
+                    </a>
+                    <a class="menu-item" :class="{active: currentPage === 'logs'}" @click="navigate('logs')">
+                        <i class="fas fa-history"></i> 操作日志
+                    </a>
+                </div>
+            </div>
+
+            <!-- 主内容 -->
+            <div class="main-content">
+                <!-- 顶部栏 -->
+                <div class="top-bar">
+                    <div class="page-title">{{ pageTitle }}</div>
+                    <div class="d-flex align-items-center gap-3">
+                        <span><i class="fas fa-user"></i> {{ currentUser.real_name || currentUser.username }}</span>
+                        <button class="btn btn-outline-secondary btn-sm" @click="handleLogout">
+                            <i class="fas fa-sign-out-alt"></i> 退出
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 仪表盘 -->
+                <div class="content-panel" :class="{active: currentPage === 'dashboard'}">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3" v-for="stat in dashboardStats" :key="stat.label">
+                            <div class="stat-card">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="stat-icon" :style="{background: stat.bg}">
+                                        <i :class="stat.icon" :style="{color: stat.color}"></i>
+                                    </div>
+                                    <span class="badge bg-light text-dark">{{ stat.period }}</span>
+                                </div>
+                                <div class="stat-value">{{ stat.value }}</div>
+                                <div class="stat-label">{{ stat.label }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">系统功能模块</div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-4" v-for="mod in modules" :key="mod.name">
+                                            <div class="card h-100" style="cursor:pointer" @click="navigate(mod.page)">
+                                                <div class="card-body text-center py-4">
+                                                    <i :class="mod.icon" style="font-size: 32px; color: #3b82f6;"></i>
+                                                    <h6 class="mt-2">{{ mod.name }}</h6>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">快捷操作</div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary" @click="navigate('warehouse-receipt')">
+                                            <i class="fas fa-plus"></i> 新建收货登记
+                                        </button>
+                                        <button class="btn btn-outline-success" @click="navigate('transport-tasks')">
+                                            <i class="fas fa-truck"></i> 新建运输任务
+                                        </button>
+                                        <button class="btn btn-outline-info" @click="navigate('documents')">
+                                            <i class="fas fa-file"></i> 生成报关文件
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 通用列表页面模板 -->
+                <div class="content-panel" :class="{active: showListPage}">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>{{ pageTitle }}</span>
+                            <button class="btn btn-primary btn-sm" @click="showAddForm = true" v-if="currentPage !== 'logs' && currentPage !== 'tracking'">
+                                <i class="fas fa-plus"></i> 新增
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <!-- 搜索栏 -->
+                            <div class="search-bar">
+                                <input type="text" class="form-control" v-model="searchKeyword" placeholder="搜索关键字..." @keyup.enter="loadData">
+                                <button class="btn btn-outline-primary" @click="loadData"><i class="fas fa-search"></i> 搜索</button>
+                            </div>
+                            <!-- 表格 -->
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th v-for="col in tableColumns" :key="col.key">{{ col.label }}</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="item in tableData" :key="item.id">
+                                            <td v-for="col in tableColumns" :key="col.key">
+                                                <span v-if="col.type === 'status'" :class="'badge bg-' + getStatusColor(item[col.key])">{{ getStatusLabel(item[col.key], col.key) }}</span>
+                                                <span v-else-if="col.type === 'datetime'">{{ formatDate(item[col.key]) }}</span>
+                                                <span v-else>{{ item[col.key] }}</span>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1" @click="viewDetail(item)">详情</button>
+                                                <button class="btn btn-sm btn-outline-danger" @click="deleteItem(item)" v-if="currentPage !== 'logs'">删除</button>
+                                            </td>
+                                        </tr>
+                                        <tr v-if="tableData.length === 0">
+                                            <td :colspan="tableColumns.length + 1" class="text-center text-muted py-4">暂无数据</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- 分页 -->
+                            <nav v-if="totalPages > 1">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item" :class="{disabled: currentPageNum <= 1}">
+                                        <a class="page-link" @click="changePage(currentPageNum - 1)">上一页</a>
+                                    </li>
+                                    <li class="page-item" v-for="p in totalPages" :key="p" :class="{active: p === currentPageNum}">
+                                        <a class="page-link" @click="changePage(p)">{{ p }}</a>
+                                    </li>
+                                    <li class="page-item" :class="{disabled: currentPageNum >= totalPages}">
+                                        <a class="page-link" @click="changePage(currentPageNum + 1)">下一页</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.3.4/vue.global.prod.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/1.5.0/axios.min.js"></script>
+    <script>
+        const { createApp, ref, reactive, computed, watch } = Vue;
+
+        const app = createApp({
+            setup() {
+                const isLoggedIn = ref(false);
+                const currentUser = ref({});
+                const currentPage = ref('dashboard');
+                const pageTitle = ref('仪表盘');
+                const loginLoading = ref(false);
+                const loginError = ref('');
+                const searchKeyword = ref('');
+                const tableData = ref([]);
+                const tableColumns = ref([]);
+                const currentPageNum = ref(1);
+                const totalPages = ref(1);
+                const showAddForm = ref(false);
+                const openSubmenus = reactive({
+                    warehouse: false, sorting: false, transport: false, finance: false
+                });
+                const dashboardStats = ref([]);
+                const modules = ref([
+                    {name: '云仓集货', icon: 'fas fa-warehouse', page: 'warehouse-receipt'},
+                    {name: '分装管理', icon: 'fas fa-sort-amount-up', page: 'sorting-tasks'},
+                    {name: '文件生成', icon: 'fas fa-file-alt', page: 'documents'},
+                    {name: '装车运输', icon: 'fas fa-truck', page: 'transport-tasks'},
+                    {name: '出口报关', icon: 'fas fa-passport', page: 'customs'},
+                    {name: '进口清关', icon: 'fas fa-clipboard-check', page: 'clearance'},
+                    {name: '配送管理', icon: 'fas fa-truck-fast', page: 'distribution'},
+                    {name: '签收入库', icon: 'fas fa-signature', page: 'sign'},
+                    {name: '对账结算', icon: 'fas fa-coins', page: 'reconciliation'},
+                    {name: '物流跟踪', icon: 'fas fa-search-location', page: 'tracking'},
+                    {name: '异常预警', icon: 'fas fa-bell', page: 'alerts'},
+                    {name: '计费规则', icon: 'fas fa-calculator', page: 'charging'},
+                ]);
+
+                const loginForm = reactive({
+                    username: '',
+                    password: '',
+                    remember: false
+                });
+
+                const pageConfigs = {
+                    'warehouse-receipt': { title: '收货登记', api: '/api/warehouse/receipts', columns: [
+                        {key: 'receipt_no', label: '收货单号'}, {key: 'product_name', label: '品名'},
+                        {key: 'sku', label: 'SKU'}, {key: 'quantity', label: '数量'},
+                        {key: 'weight', label: '重量(kg)'}, {key: 'status', label: '状态', type: 'status'},
+                        {key: 'created_at', label: '创建时间', type: 'datetime'}
+                    ]},
+                    'warehouse-inventory': { title: '库存管理', api: '/api/warehouse/inventory', columns: [
+                        {key: 'product_name', label: '品名'}, {key: 'sku', label: 'SKU'},
+                        {key: 'total_quantity', label: '总库存'}, {key: 'available_quantity', label: '可用数量'},
+                        {key: 'status', label: '状态', type: 'status'}
+                    ]},
+                    'warehouse-batch': { title: '批次管理', api: '/api/warehouse/batches', columns: [
+                        {key: 'batch_no', label: '批次号'}, {key: 'product_name', label: '品名'},
+                        {key: 'quantity', label: '数量'}, {key: 'created_at', label: '创建时间', type: 'datetime'}
+                    ]},
+                    'sorting-points': { title: '收件点管理', api: '/api/sorting/points', columns: [
+                        {key: 'point_code', label: '编码'}, {key: 'name', label: '名称'},
+                        {key: 'address', label: '地址'}, {key: 'contact_person', label: '联系人'},
+                        {key: 'contact_phone', label: '联系方式'}, {key: 'status', label: '状态', type: 'status'}
+                    ]},
+                    'sorting-tasks': { title: '分装任务', api: '/api/sorting/tasks', columns: [
+                        {key: 'task_no', label: '任务编号'}, {key: 'batch_no', label: '批次号'},
+                        {key: 'total_packages', label: '包裹数'}, {key: 'status', label: '状态', type: 'status'},
+                        {key: 'created_at', label: '创建时间', type: 'datetime'}
+                    ]},
+                    'documents': { title: '文件管理', api: '/api/document/list', columns: [
+                        {key: 'doc_no', label: '文件编号'}, {key: 'doc_type', label: '文件类型'},
+                        {key: 'title', label: '标题'}, {key: 'version', label: '版本'},
+                        {key: 'status', label: '状态', type: 'status'}, {key: 'created_at', label: '创建时间', type: 'datetime'}
+                    ]},
+                    'transport-tasks': { title: '运输任务', api: '/api/transport/tasks', columns: [
+                        {key: 'task_no', label: '任务编号'}, {key: 'route_from', label: '出发地'},
+                        {key: 'route_to', label: '目的地'}, {key: 'status', label: '状态', type: 'status'},
+                        {key: 'created_at', label: '创建时间', type: 'datetime'}
+                    ]},
+                    'transport-vehicles': { title: '车辆管理', api: '/api/transport/vehicles', columns: [
+                        {key: 'plate_no', label: '车牌号'}, {key: 'vehicle_type', label: '车辆类型'},
+                        {key: 'brand', label: '品牌'}, {key: 'load_weight', label: '载重(kg)'},
+                        {key: 'status', label: '状态', type: 'status'}
+                    ]},
+                    'customs': { title: '出口报关管理', api: '/api/customs/declarations', columns: [
+                        {key: 'declaration_no', label: '报关单号'}, {key: 'batch_no', label: '批次号'},
+                        {key: 'status', label: '状态', type: 'status'}, {key: 'submitted_at', label: '提交时间', type: 'datetime'}
+                    ]},
+                    'clearance': { title: '进口清关管理', api: '/api/clearance/records', columns: [
+                        {key: 'clearance_no', label: '清关编号'}, {key: 'batch_no', label: '批次号'},
+                        {key: 'status', label: '状态', type: 'status'}, {key: 'submitted_at', label: '提交时间', type: 'datetime'}
+                    ]},
+                    'port-transport': { title: '口岸运输管理', api: '/api/port-transport/tasks', columns: [
+                        {key: 'task_no', label: '任务编号'}, {key: 'batch_no', label: '批次号'},
+                        {key: 'status', label: '状态', type: 'status'}, {key: 'departure_time', label: '出发时间', type: 'datetime'}
+                    ]},
+                    'distribution': { title: '配送管理', api: '/api/distribution/tasks', columns: [
+                        {key: 'task_no', label: '任务编号'}, {key: 'package_count', label: '包裹数'},
+                        {key: 'status', label: '状态', type: 'status'}, {key: 'planned_time', label: '计划时间', type: 'datetime'}
+                    ]},
+                    'sign': { title: '签收入库管理', api: '/api/sign/records', columns: [
+                        {key: 'sign_no', label: '签收编号'}, {key: 'package_no', label: '包裹编号'},
+                        {key: 'signer', label: '签收人'}, {key: 'package_status', label: '包裹状态'},
+                        {key: 'sign_time', label: '签收时间', type: 'datetime'}
+                    ]},
+                    'reconciliation': { title: '对账管理', api: '/api/reconciliation/records', columns: [
+                        {key: 'recon_no', label: '对账编号'}, {key: 'batch_no', label: '批次号'},
+                        {key: 'recon_type', label: '对账频率'}, {key: 'total_amount', label: '总金额'},
+                        {key: 'status', label: '状态', type: 'status'}
+                    ]},
+                    'settlement': { title: '资金结算', api: '/api/settlement/orders', columns: [
+                        {key: 'settlement_no', label: '结算编号'}, {key: 'total_amount', label: '结算金额'},
+                        {key: 'settlement_method', label: '结算方式'}, {key: 'status', label: '状态', type: 'status'}
+                    ]},
+                    'payment': { title: '支付开票', api: '/api/payment/records', columns: [
+                        {key: 'payment_no', label: '支付编号'}, {key: 'amount', label: '金额'},
+                        {key: 'payment_method', label: '支付方式'}, {key: 'status', label: '状态', type: 'status'}
+                    ]},
+                    'tracking': { title: '物流跟踪', api: '/api/tracking/list', columns: [
+                        {key: 'tracking_no', label: '跟踪编号'}, {key: 'order_no', label: '订单号'},
+                        {key: 'current_stage', label: '当前环节'}, {key: 'operator', label: '操作人'},
+                        {key: 'operation_time', label: '操作时间', type: 'datetime'}
+                    ]},
+                    'alerts': { title: '异常预警', api: '/api/alert/list', columns: [
+                        {key: 'alert_no', label: '预警编号'}, {key: 'alert_type', label: '预警类型'},
+                        {key: 'alert_level', label: '级别'}, {key: 'description', label: '描述'},
+                        {key: 'status', label: '状态', type: 'status'}
+                    ]},
+                    'charging': { title: '计费规则', api: '/api/charging/rules', columns: [
+                        {key: 'rule_name', label: '规则名称'}, {key: 'rule_type', label: '费用类型'},
+                        {key: 'calc_method', label: '计算方式'}, {key: 'priority', label: '优先级'},
+                        {key: 'status', label: '状态', type: 'status'}
+                    ]},
+                    'users': { title: '用户管理', api: '/api/auth/users', columns: [
+                        {key: 'username', label: '用户名'}, {key: 'real_name', label: '真实姓名'},
+                        {key: 'email', label: '邮箱'}, {key: 'phone', label: '手机号'},
+                        {key: 'status', label: '状态', type: 'status'}
+                    ]},
+                    'logs': { title: '操作日志', api: '/api/permission/logs', columns: [
+                        {key: 'username', label: '操作人'}, {key: 'action', label: '操作'},
+                        {key: 'module', label: '模块'}, {key: 'target_desc', label: '操作对象'},
+                        {key: 'ip_address', label: 'IP地址'}, {key: 'operation_time', label: '操作时间', type: 'datetime'}
+                    ]}
+                };
+
+                const showListPage = computed(() => {
+                    return currentPage.value !== 'dashboard';
+                });
+
+                const axiosInstance = axios.create({
+                    baseURL: window.location.origin,
+                    timeout: 30000,
+                    withCredentials: true
+                });
+
+                function getStatusColor(status) {
+                    const colors = {
+                        'pending': 'warning', 'processing': 'info', 'completed': 'success',
+                        'approved': 'success', 'rejected': 'danger', 'in_transit': 'info',
+                        'active': 'success', 'inactive': 'secondary', 'normal': 'success',
+                        'confirmed': 'primary', 'draft': 'secondary', 'final': 'success',
+                        'pending_audit': 'warning', 'pending_payment': 'info', 'paid': 'success',
+                        'resolved': 'success', 'exception': 'danger'
+                    };
+                    return colors[status] || 'secondary';
+                }
+
+                function getStatusLabel(status, key) {
+                    const labels = {
+                        'pending': '待处理', 'processing': '处理中', 'completed': '已完成',
+                        'approved': '已通过', 'rejected': '已驳回', 'in_transit': '运输中',
+                        'active': '启用', 'inactive': '停用', 'normal': '正常',
+                        'confirmed': '已确认', 'draft': '草稿', 'final': '定稿',
+                        'pending_audit': '待审核', 'pending_payment': '待支付', 'paid': '已支付',
+                        'resolved': '已解决', 'exception': '异常',
+                        'collecting': '集货中', 'sorted': '已分装', 'transporting': '运输中',
+                        'customs': '报关中', 'cleared': '已清关', 'distributing': '配送中',
+                        'signed': '已签收'
+                    };
+                    return labels[status] || status;
+                }
+
+                function formatDate(dateStr) {
+                    if (!dateStr) return '-';
+                    return dateStr;
+                }
+
+                async function handleLogin() {
+                    loginLoading.value = true;
+                    loginError.value = '';
+                    try {
+                        const res = await axiosInstance.post('/api/auth/login', loginForm);
+                        if (res.data.code === 200) {
+                            currentUser.value = res.data.data;
+                            isLoggedIn.value = true;
+                            loadDashboard();
+                        } else {
+                            loginError.value = res.data.message;
+                        }
+                    } catch (err) {
+                        loginError.value = err.response?.data?.message || '登录失败，请检查网络';
+                    } finally {
+                        loginLoading.value = false;
+                    }
+                }
+
+                async function handleLogout() {
+                    await axiosInstance.post('/api/auth/logout');
+                    isLoggedIn.value = false;
+                    currentUser.value = {};
+                }
+
+                function navigate(page) {
+                    currentPage.value = page;
+                    const config = pageConfigs[page];
+                    if (config) {
+                        pageTitle.value = config.title;
+                        tableColumns.value = config.columns;
+                        searchKeyword.value = '';
+                        currentPageNum.value = 1;
+                        loadData();
+                    } else if (page === 'dashboard') {
+                        pageTitle.value = '仪表盘';
+                        loadDashboard();
+                    }
+                }
+
+                function toggleSubmenu(name) {
+                    openSubmenus[name] = !openSubmenus[name];
+                }
+
+                async function loadData() {
+                    const config = pageConfigs[currentPage.value];
+                    if (!config) return;
+                    try {
+                        const params = { page: currentPageNum.value, per_page: 20 };
+                        if (searchKeyword.value) params.keyword = searchKeyword.value;
+                        const res = await axiosInstance.get(config.api, { params });
+                        if (res.data.code === 200) {
+                            tableData.value = res.data.data.items || res.data.data;
+                            if (res.data.data.total !== undefined) {
+                                totalPages.value = Math.ceil(res.data.data.total / 20);
+                            }
+                        }
+                    } catch (err) {
+                        console.error('加载数据失败:', err);
+                    }
+                }
+
+                async function loadDashboard() {
+                    try {
+                        const res = await axiosInstance.get('/api/statistics/dashboard');
+                        if (res.data.code === 200) {
+                            const d = res.data.data;
+                            dashboardStats.value = [
+                                { label: '集货登记', value: d.warehouse.total, icon: 'fas fa-warehouse', bg: '#eff6ff', color: '#3b82f6', period: '总计' },
+                                { label: '分装完成率', value: d.sorting.rate + '%', icon: 'fas fa-sort', bg: '#f0fdf4', color: '#22c55e', period: d.sorting.completed + '/' + d.sorting.total },
+                                { label: '运输中', value: d.transport.in_transit, icon: 'fas fa-truck', bg: '#fefce8', color: '#eab308', period: '共' + d.transport.total + '单' },
+                                { label: '报关通过率', value: d.customs.rate + '%', icon: 'fas fa-passport', bg: '#fef2f2', color: '#ef4444', period: d.customs.approved + '/' + d.customs.total },
+                                { label: '配送完成率', value: d.distribution.rate + '%', icon: 'fas fa-truck-fast', bg: '#f5f3ff', color: '#8b5cf6', period: d.distribution.completed + '/' + d.distribution.total },
+                                { label: '签收总数', value: d.sign.total, icon: 'fas fa-signature', bg: '#ecfeff', color: '#06b6d4', period: '总计' },
+                            ];
+                        }
+                    } catch (err) {
+                        console.error('加载仪表盘失败:', err);
+                    }
+                }
+
+                function changePage(page) {
+                    if (page < 1 || page > totalPages.value) return;
+                    currentPageNum.value = page;
+                    loadData();
+                }
+
+                function viewDetail(item) {
+                    alert('详情功能开发中...\nID: ' + item.id);
+                }
+
+                async function deleteItem(item) {
+                    if (!confirm('确认删除该记录？')) return;
+                    try {
+                        // 简单标记删除 - 实际应调用删除API
+                        alert('删除功能需实现具体API');
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+
+                // 检查登录状态
+                async function checkLogin() {
+                    try {
+                        const res = await axiosInstance.get('/api/auth/profile');
+                        if (res.data.code === 200) {
+                            currentUser.value = res.data.data;
+                            isLoggedIn.value = true;
+                            loadDashboard();
+                        }
+                    } catch (err) {
+                        isLoggedIn.value = false;
+                    }
+                }
+
+                checkLogin();
+
+                return {
+                    isLoggedIn, currentUser, currentPage, pageTitle,
+                    loginForm, loginLoading, loginError,
+                    searchKeyword, tableData, tableColumns,
+                    currentPageNum, totalPages, showAddForm,
+                    openSubmenus, dashboardStats, modules,
+                    showListPage, pageConfigs,
+                    handleLogin, handleLogout, navigate,
+                    toggleSubmenu, loadData, changePage,
+                    viewDetail, deleteItem,
+                    getStatusColor, getStatusLabel, formatDate
+                };
+            }
+        });
+
+        app.mount('#app');
+    </script>
+</body>
+</html>
