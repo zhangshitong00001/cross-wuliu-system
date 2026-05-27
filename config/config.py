@@ -9,15 +9,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'cross-border-logistics-secret-key-2026'
     
-    # MySQL数据库配置
-    DB_USER = os.environ.get('DB_USER') or 'debian-sys-maint'
-    DB_PASSWORD = os.environ.get('DB_PASSWORD') or 'Rlt13NjG3fP2mg0I'
-    DB_HOST = os.environ.get('DB_HOST') or 'localhost'
-    DB_PORT = os.environ.get('DB_PORT') or '3306'
-    DB_NAME = os.environ.get('DB_NAME') or 'cross_border_logistics'
-    
+    # PostgreSQL数据库配置
+    DB_USER = os.environ.get('DB_USER') or 'zhangshitong'
+    DB_PASSWORD = os.environ.get('DB_PASSWORD') or 'zhangshitong123'
+    DB_HOST = os.environ.get('DB_HOST') or '127.0.0.1'
+    DB_PORT = os.environ.get('DB_PORT') or '5432'
+    DB_NAME = os.environ.get('DB_NAME') or 'logistics_db'
+
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4'
+        f'postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_size': 10,
