@@ -121,6 +121,30 @@ def create_receipt():
     return jsonify({'code': 200, 'message': '收货登记成功', 'data': receipt.to_dict()})
 
 
+@warehouse_bp.route('/receipts/<int:receipt_id>', methods=['GET'])
+@login_required
+def get_receipt(receipt_id):
+    """获取收货详情"""
+    receipt = WarehouseReceipt.query.get_or_404(receipt_id)
+    return jsonify({'code': 200, 'data': receipt.to_dict()})
+
+
+@warehouse_bp.route('/receipts/<int:receipt_id>', methods=['DELETE'])
+@login_required
+def delete_receipt(receipt_id):
+    """删除收货记录"""
+    receipt = WarehouseReceipt.query.get_or_404(receipt_id)
+    receipt.is_deleted = 1
+    db.session.commit()
+    OperationLog(
+        user_id=current_user.id, username=current_user.username,
+        action='delete', module='warehouse_receipt',
+        target_id=receipt.id, target_desc=f'删除收货: {receipt.receipt_no}',
+        ip_address=request.remote_addr
+    ).save()
+    return jsonify({'code': 200, 'message': '删除成功'})
+
+
 @warehouse_bp.route('/receipts/<int:receipt_id>/confirm', methods=['POST'])
 @login_required
 def confirm_receipt(receipt_id):

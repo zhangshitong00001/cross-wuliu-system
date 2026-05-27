@@ -609,20 +609,31 @@
                 <form @submit.prevent="handleLogin">
                     <div class="mb-3">
                         <label class="form-label">用户名</label>
-                        <input type="text" class="form-control form-control-lg" v-model="loginForm.username" placeholder="请输入用户名" required>
+                        <input type="text" class="form-control form-control-lg" v-model="loginForm.username" placeholder="请输入用户名" required autocomplete="username">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">密码</label>
-                        <input type="password" class="form-control form-control-lg" v-model="loginForm.password" placeholder="请输入密码" required>
+                        <input type="password" class="form-control form-control-lg" v-model="loginForm.password" placeholder="请输入密码" required autocomplete="current-password">
+                    </div>
+                    <!-- 验证码 -->
+                    <div class="mb-3" v-if="needCaptcha">
+                        <label class="form-label">验证码</label>
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="text" class="form-control form-control-lg" v-model="captchaCode" placeholder="请输入验证码" maxlength="4" style="flex:1;" required>
+                            <img :src="captchaImage" @click="loadCaptcha" style="cursor:pointer;border-radius:8px;height:44px;" title="点击刷新验证码">
+                        </div>
                     </div>
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" v-model="loginForm.remember">
                         <label class="form-check-label">记住我</label>
                     </div>
-                    <div class="alert alert-danger" v-if="loginError">{{ loginError }}</div>
+                    <div class="alert alert-danger" v-if="loginError">
+                        <i class="fas fa-exclamation-circle me-1"></i> {{ loginError }}
+                        <span v-if="needCaptcha" class="d-block mt-1" style="font-size:12px;">登录失败次数过多，请输入验证码后重试</span>
+                    </div>
                     <button type="submit" class="btn btn-primary btn-lg w-100" :disabled="loginLoading">
-                        <span v-if="loginLoading" class="spinner-border spinner-border-sm"></span>
-                        <span v-else>登 录</span>
+                        <span v-if="loginLoading" class="spinner-border spinner-border-sm me-2"></span>
+                        <span v-else><i class="fas fa-sign-in-alt me-2"></i>登 录</span>
                     </button>
                 </form>
             </div>
@@ -839,7 +850,7 @@
                     <div class="card">
                         <div class="card-header">
                             <span><i class="fas fa-list me-2" style="color: var(--primary);"></i>{{ pageTitle }}</span>
-                            <button class="btn btn-primary btn-sm" @click="showAddForm = true" v-if="currentPage !== 'logs' && currentPage !== 'tracking'">
+                            <button class="btn btn-primary btn-sm" @click="openAddForm" v-if="addFormFields.length > 0">
                                 <i class="fas fa-plus"></i> 新增
                             </button>
                         </div>
@@ -853,6 +864,9 @@
                                     <input type="text" class="form-control" v-model="searchKeyword" placeholder="搜索关键字..." @keyup.enter="loadData" style="border-left:none;">
                                 </div>
                                 <button class="btn btn-primary" @click="loadData"><i class="fas fa-search me-1"></i> 搜索</button>
+                                <button class="btn btn-outline-secondary" @click="searchKeyword='';loadData()" v-if="searchKeyword">
+                                    <i class="fas fa-times"></i> 清除
+                                </button>
                             </div>
                             <!-- 表格 -->
                             <div class="table-responsive">
@@ -860,23 +874,28 @@
                                     <thead>
                                         <tr>
                                             <th v-for="col in tableColumns" :key="col.key">{{ col.label }}</th>
-                                            <th style="width:120px;">操作</th>
+                                            <th style="width:140px;">操作</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr v-for="item in tableData" :key="item.id">
                                             <td v-for="col in tableColumns" :key="col.key">
-                                                <span v-if="col.type === 'status'" :class="'badge bg-' + getStatusColor(item[col.key])">{{ getStatusLabel(item[col.key], col.key) }}</span>
+                                                <span v-if="col.type === 'status'" :class="'badge bg-' + getStatusColor(item[col.key])">{{ getStatusLabel(item[col.key]) }}</span>
                                                 <span v-else-if="col.type === 'datetime'" style="color:#64748b;font-size:13px;">{{ formatDate(item[col.key]) }}</span>
-                                                <span v-else style="font-weight:500;">{{ item[col.key] }}</span>
+                                                <span v-else style="font-weight:500;">{{ item[col.key] || '-' }}</span>
                                             </td>
                                             <td>
-                                                <button class="btn btn-sm btn-outline-primary me-1" @click="viewDetail(item)" title="查看详情">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-danger" @click="deleteItem(item)" v-if="currentPage !== 'logs'" title="删除">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary" @click="viewDetail(item)" title="查看详情">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-info" @click="openEditForm(item)" v-if="addFormFields.length > 0" title="编辑">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger" @click="deleteItem(item)" v-if="currentPage !== 'logs'" title="删除">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                         <tr v-if="tableData.length === 0">
@@ -905,6 +924,111 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ===== 新增弹窗 ===== -->
+                <div class="modal fade" :class="{show: showAddForm}" :style="{display: showAddForm ? 'block' : 'none'}" @click.self="showAddForm=false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content" style="border:none;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+                            <div class="modal-header" style="border-bottom:1px solid #f1f5f9;padding:20px 24px;">
+                                <h5 class="modal-title fw-bold"><i class="fas fa-plus-circle me-2" style="color:var(--primary);"></i>新增{{ pageTitle }}</h5>
+                                <button type="button" class="btn-close" @click="showAddForm=false"></button>
+                            </div>
+                            <div class="modal-body" style="padding:24px;">
+                                <div class="mb-3" v-for="field in addFormFields" :key="field.key">
+                                    <label class="form-label fw-medium">{{ field.label }} <span v-if="field.required" style="color:var(--danger);">*</span></label>
+                                    <input v-if="field.type === 'text' || field.type === 'email' || field.type === 'password' || field.type === 'number'"
+                                           :type="field.type" class="form-control" v-model="addFormData[field.key]"
+                                           :required="field.required" :placeholder="'请输入' + field.label"
+                                           style="border:2px solid #e2e8f0;border-radius:10px;padding:10px 14px;">
+                                    <input v-else-if="field.type === 'datetime-local'"
+                                           type="datetime-local" class="form-control" v-model="addFormData[field.key]"
+                                           style="border:2px solid #e2e8f0;border-radius:10px;padding:10px 14px;">
+                                    <select v-else-if="field.type === 'select'" class="form-select" v-model="addFormData[field.key]"
+                                            style="border:2px solid #e2e8f0;border-radius:10px;padding:10px 14px;">
+                                        <option value="">请选择</option>
+                                        <option v-for="opt in field.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                                    </select>
+                                    <textarea v-else-if="field.type === 'textarea'" class="form-control" v-model="addFormData[field.key]" rows="3"
+                                              style="border:2px solid #e2e8f0;border-radius:10px;padding:10px 14px;"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer" style="border-top:1px solid #f1f5f9;padding:16px 24px;">
+                                <button class="btn btn-light" @click="showAddForm=false" style="border-radius:10px;padding:10px 24px;">取消</button>
+                                <button class="btn btn-primary" @click="submitAddForm" style="border-radius:10px;padding:10px 24px;">
+                                    <i class="fas fa-check me-1"></i> 确认新增
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== 编辑弹窗 ===== -->
+                <div class="modal fade" :class="{show: showEditForm}" :style="{display: showEditForm ? 'block' : 'none'}" @click.self="showEditForm=false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content" style="border:none;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+                            <div class="modal-header" style="border-bottom:1px solid #f1f5f9;padding:20px 24px;">
+                                <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2" style="color:var(--warning);"></i>编辑{{ pageTitle }}</h5>
+                                <button type="button" class="btn-close" @click="showEditForm=false"></button>
+                            </div>
+                            <div class="modal-body" style="padding:24px;">
+                                <div class="mb-3" v-for="field in addFormFields" :key="field.key">
+                                    <label class="form-label fw-medium">{{ field.label }}</label>
+                                    <input v-if="field.type === 'text' || field.type === 'email' || field.type === 'password' || field.type === 'number'"
+                                           :type="field.type" class="form-control" v-model="addFormData[field.key]"
+                                           style="border:2px solid #e2e8f0;border-radius:10px;padding:10px 14px;">
+                                    <input v-else-if="field.type === 'datetime-local'"
+                                           type="datetime-local" class="form-control" v-model="addFormData[field.key]"
+                                           style="border:2px solid #e2e8f0;border-radius:10px;padding:10px 14px;">
+                                    <select v-else-if="field.type === 'select'" class="form-select" v-model="addFormData[field.key]"
+                                            style="border:2px solid #e2e8f0;border-radius:10px;padding:10px 14px;">
+                                        <option value="">请选择</option>
+                                        <option v-for="opt in field.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+                                    </select>
+                                    <textarea v-else-if="field.type === 'textarea'" class="form-control" v-model="addFormData[field.key]" rows="3"
+                                              style="border:2px solid #e2e8f0;border-radius:10px;padding:10px 14px;"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer" style="border-top:1px solid #f1f5f9;padding:16px 24px;">
+                                <button class="btn btn-light" @click="showEditForm=false" style="border-radius:10px;padding:10px 24px;">取消</button>
+                                <button class="btn btn-warning" @click="submitEditForm" style="border-radius:10px;padding:10px 24px;color:#fff;">
+                                    <i class="fas fa-save me-1"></i> 保存修改
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== 详情弹窗 ===== -->
+                <div class="modal fade" :class="{show: showDetailModal}" :style="{display: showDetailModal ? 'block' : 'none'}" @click.self="showDetailModal=false">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content" style="border:none;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+                            <div class="modal-header" style="border-bottom:1px solid #f1f5f9;padding:20px 24px;">
+                                <h5 class="modal-title fw-bold"><i class="fas fa-info-circle me-2" style="color:var(--info);"></i>{{ pageTitle }} - 详情</h5>
+                                <button type="button" class="btn-close" @click="showDetailModal=false"></button>
+                            </div>
+                            <div class="modal-body" style="padding:24px;">
+                                <div class="row g-3">
+                                    <div class="col-md-6" v-for="col in tableColumns" :key="col.key">
+                                        <div style="background:#f8fafc;border-radius:10px;padding:12px 16px;">
+                                            <div style="font-size:12px;color:#94a3b8;margin-bottom:4px;">{{ col.label }}</div>
+                                            <div style="font-weight:600;color:#0f172a;">
+                                                <span v-if="col.type === 'status'" :class="'badge bg-' + getStatusColor(detailItem[col.key])">{{ getStatusLabel(detailItem[col.key]) }}</span>
+                                                <span v-else-if="col.type === 'datetime'">{{ formatDate(detailItem[col.key]) }}</span>
+                                                <span v-else>{{ detailItem[col.key] || '-' }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer" style="border-top:1px solid #f1f5f9;padding:16px 24px;">
+                                <button class="btn btn-light" @click="showDetailModal=false" style="border-radius:10px;padding:10px 24px;">关闭</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 模态框遮罩 -->
+                <div class="modal-backdrop fade show" v-if="showAddForm || showEditForm || showDetailModal" style="z-index:1040;"></div>
             </div>
         </div>
     </div>
@@ -916,6 +1040,7 @@
 
         const app = createApp({
             setup() {
+                // ===== 状态 =====
                 const isLoggedIn = ref(false);
                 const currentUser = ref({});
                 const currentPage = ref('dashboard');
@@ -928,10 +1053,24 @@
                 const currentPageNum = ref(1);
                 const totalPages = ref(1);
                 const showAddForm = ref(false);
+                const addFormData = ref({});
+                const addFormFields = ref([]);
+                const editingItem = ref(null);
+                const showEditForm = ref(false);
+                const showDetailModal = ref(false);
+                const detailItem = ref({});
                 const openSubmenus = reactive({
                     warehouse: false, sorting: false, transport: false, finance: false
                 });
                 const dashboardStats = ref([]);
+                const alertCount = ref(0);
+
+                // 验证码
+                const needCaptcha = ref(false);
+                const captchaImage = ref('');
+                const captchaCodeId = ref('');
+                const captchaCode = ref('');
+
                 const modules = ref([
                     {name: '云仓集货', icon: 'fas fa-warehouse', page: 'warehouse-receipt', bg: '#e0e7ff', color: '#4f46e5'},
                     {name: '分装管理', icon: 'fas fa-sort-amount-up', page: 'sorting-tasks', bg: '#d1fae5', color: '#059669'},
@@ -946,7 +1085,6 @@
                     {name: '异常预警', icon: 'fas fa-bell', page: 'alerts', bg: '#fee2e2', color: '#ef4444'},
                     {name: '计费规则', icon: 'fas fa-calculator', page: 'charging', bg: '#f3e8ff', color: '#a855f7'},
                 ]);
-                const alertCount = ref(0);
 
                 const loginForm = reactive({
                     username: '',
@@ -954,113 +1092,318 @@
                     remember: false
                 });
 
+                // ===== 页面配置 =====
                 const pageConfigs = {
-                    'warehouse-receipt': { title: '收货登记', api: '/api/warehouse/receipts', columns: [
-                        {key: 'receipt_no', label: '收货单号'}, {key: 'product_name', label: '品名'},
-                        {key: 'sku', label: 'SKU'}, {key: 'quantity', label: '数量'},
-                        {key: 'weight', label: '重量(kg)'}, {key: 'status', label: '状态', type: 'status'},
-                        {key: 'created_at', label: '创建时间', type: 'datetime'}
-                    ]},
-                    'warehouse-inventory': { title: '库存管理', api: '/api/warehouse/inventory', columns: [
-                        {key: 'product_name', label: '品名'}, {key: 'sku', label: 'SKU'},
-                        {key: 'total_quantity', label: '总库存'}, {key: 'available_quantity', label: '可用数量'},
-                        {key: 'status', label: '状态', type: 'status'}
-                    ]},
-                    'warehouse-batch': { title: '批次管理', api: '/api/warehouse/batches', columns: [
-                        {key: 'batch_no', label: '批次号'}, {key: 'product_name', label: '品名'},
-                        {key: 'quantity', label: '数量'}, {key: 'created_at', label: '创建时间', type: 'datetime'}
-                    ]},
-                    'sorting-points': { title: '收件点管理', api: '/api/sorting/points', columns: [
-                        {key: 'point_code', label: '编码'}, {key: 'name', label: '名称'},
-                        {key: 'address', label: '地址'}, {key: 'contact_person', label: '联系人'},
-                        {key: 'contact_phone', label: '联系方式'}, {key: 'status', label: '状态', type: 'status'}
-                    ]},
-                    'sorting-tasks': { title: '分装任务', api: '/api/sorting/tasks', columns: [
-                        {key: 'task_no', label: '任务编号'}, {key: 'batch_no', label: '批次号'},
-                        {key: 'total_packages', label: '包裹数'}, {key: 'status', label: '状态', type: 'status'},
-                        {key: 'created_at', label: '创建时间', type: 'datetime'}
-                    ]},
-                    'documents': { title: '文件管理', api: '/api/document/list', columns: [
-                        {key: 'doc_no', label: '文件编号'}, {key: 'doc_type', label: '文件类型'},
-                        {key: 'title', label: '标题'}, {key: 'version', label: '版本'},
-                        {key: 'status', label: '状态', type: 'status'}, {key: 'created_at', label: '创建时间', type: 'datetime'}
-                    ]},
-                    'transport-tasks': { title: '运输任务', api: '/api/transport/tasks', columns: [
-                        {key: 'task_no', label: '任务编号'}, {key: 'route_from', label: '出发地'},
-                        {key: 'route_to', label: '目的地'}, {key: 'status', label: '状态', type: 'status'},
-                        {key: 'created_at', label: '创建时间', type: 'datetime'}
-                    ]},
-                    'transport-vehicles': { title: '车辆管理', api: '/api/transport/vehicles', columns: [
-                        {key: 'plate_no', label: '车牌号'}, {key: 'vehicle_type', label: '车辆类型'},
-                        {key: 'brand', label: '品牌'}, {key: 'load_weight', label: '载重(kg)'},
-                        {key: 'status', label: '状态', type: 'status'}
-                    ]},
-                    'customs': { title: '出口报关管理', api: '/api/customs/declarations', columns: [
-                        {key: 'declaration_no', label: '报关单号'}, {key: 'batch_no', label: '批次号'},
-                        {key: 'status', label: '状态', type: 'status'}, {key: 'submitted_at', label: '提交时间', type: 'datetime'}
-                    ]},
-                    'clearance': { title: '进口清关管理', api: '/api/clearance/records', columns: [
-                        {key: 'clearance_no', label: '清关编号'}, {key: 'batch_no', label: '批次号'},
-                        {key: 'status', label: '状态', type: 'status'}, {key: 'submitted_at', label: '提交时间', type: 'datetime'}
-                    ]},
-                    'port-transport': { title: '口岸运输管理', api: '/api/port-transport/tasks', columns: [
-                        {key: 'task_no', label: '任务编号'}, {key: 'batch_no', label: '批次号'},
-                        {key: 'status', label: '状态', type: 'status'}, {key: 'departure_time', label: '出发时间', type: 'datetime'}
-                    ]},
-                    'distribution': { title: '配送管理', api: '/api/distribution/tasks', columns: [
-                        {key: 'task_no', label: '任务编号'}, {key: 'package_count', label: '包裹数'},
-                        {key: 'status', label: '状态', type: 'status'}, {key: 'planned_time', label: '计划时间', type: 'datetime'}
-                    ]},
-                    'sign': { title: '签收入库管理', api: '/api/sign/records', columns: [
-                        {key: 'sign_no', label: '签收编号'}, {key: 'package_no', label: '包裹编号'},
-                        {key: 'signer', label: '签收人'}, {key: 'package_status', label: '包裹状态'},
-                        {key: 'sign_time', label: '签收时间', type: 'datetime'}
-                    ]},
-                    'reconciliation': { title: '对账管理', api: '/api/reconciliation/records', columns: [
-                        {key: 'recon_no', label: '对账编号'}, {key: 'batch_no', label: '批次号'},
-                        {key: 'recon_type', label: '对账频率'}, {key: 'total_amount', label: '总金额'},
-                        {key: 'status', label: '状态', type: 'status'}
-                    ]},
-                    'settlement': { title: '资金结算', api: '/api/settlement/orders', columns: [
-                        {key: 'settlement_no', label: '结算编号'}, {key: 'total_amount', label: '结算金额'},
-                        {key: 'settlement_method', label: '结算方式'}, {key: 'status', label: '状态', type: 'status'}
-                    ]},
-                    'payment': { title: '支付开票', api: '/api/payment/records', columns: [
-                        {key: 'payment_no', label: '支付编号'}, {key: 'amount', label: '金额'},
-                        {key: 'payment_method', label: '支付方式'}, {key: 'status', label: '状态', type: 'status'}
-                    ]},
-                    'tracking': { title: '物流跟踪', api: '/api/tracking/list', columns: [
-                        {key: 'tracking_no', label: '跟踪编号'}, {key: 'order_no', label: '订单号'},
-                        {key: 'current_stage', label: '当前环节'}, {key: 'operator', label: '操作人'},
-                        {key: 'operation_time', label: '操作时间', type: 'datetime'}
-                    ]},
-                    'alerts': { title: '异常预警', api: '/api/alert/list', columns: [
-                        {key: 'alert_no', label: '预警编号'}, {key: 'alert_type', label: '预警类型'},
-                        {key: 'alert_level', label: '级别'}, {key: 'description', label: '描述'},
-                        {key: 'status', label: '状态', type: 'status'}
-                    ]},
-                    'charging': { title: '计费规则', api: '/api/charging/rules', columns: [
-                        {key: 'rule_name', label: '规则名称'}, {key: 'rule_type', label: '费用类型'},
-                        {key: 'calc_method', label: '计算方式'}, {key: 'priority', label: '优先级'},
-                        {key: 'status', label: '状态', type: 'status'}
-                    ]},
-                    'users': { title: '用户管理', api: '/api/auth/users', columns: [
-                        {key: 'username', label: '用户名'}, {key: 'real_name', label: '真实姓名'},
-                        {key: 'email', label: '邮箱'}, {key: 'phone', label: '手机号'},
-                        {key: 'status', label: '状态', type: 'status'}
-                    ]},
-                    'logs': { title: '操作日志', api: '/api/permission/logs', columns: [
-                        {key: 'username', label: '操作人'}, {key: 'action', label: '操作'},
-                        {key: 'module', label: '模块'}, {key: 'target_desc', label: '操作对象'},
-                        {key: 'ip_address', label: 'IP地址'}, {key: 'operation_time', label: '操作时间', type: 'datetime'}
-                    ]}
+                    'warehouse-receipt': {
+                        title: '收货登记', api: '/api/warehouse/receipts',
+                        columns: [
+                            {key: 'receipt_no', label: '收货单号'}, {key: 'product_name', label: '品名'},
+                            {key: 'sku', label: 'SKU'}, {key: 'quantity', label: '数量'},
+                            {key: 'weight', label: '重量(kg)'}, {key: 'status', label: '状态', type: 'status'},
+                            {key: 'created_at', label: '创建时间', type: 'datetime'}
+                        ],
+                        formFields: [
+                            {key: 'product_name', label: '品名', type: 'text', required: true},
+                            {key: 'sku', label: 'SKU', type: 'text'},
+                            {key: 'quantity', label: '数量', type: 'number', required: true},
+                            {key: 'weight', label: '重量(kg)', type: 'number'},
+                            {key: 'volume', label: '体积(m³)', type: 'number'},
+                            {key: 'batch_no', label: '批次号', type: 'text'},
+                            {key: 'order_no', label: '订单号', type: 'text'},
+                            {key: 'owner_name', label: '货主', type: 'text'},
+                        ]
+                    },
+                    'warehouse-inventory': {
+                        title: '库存管理', api: '/api/warehouse/inventory',
+                        columns: [
+                            {key: 'product_name', label: '品名'}, {key: 'sku', label: 'SKU'},
+                            {key: 'total_quantity', label: '总库存'}, {key: 'available_quantity', label: '可用数量'},
+                            {key: 'status', label: '状态', type: 'status'}
+                        ]
+                    },
+                    'warehouse-batch': {
+                        title: '批次管理', api: '/api/warehouse/batches',
+                        columns: [
+                            {key: 'batch_no', label: '批次号'}, {key: 'product_name', label: '品名'},
+                            {key: 'quantity', label: '数量'}, {key: 'created_at', label: '创建时间', type: 'datetime'}
+                        ],
+                        formFields: [
+                            {key: 'batch_no', label: '批次号', type: 'text', required: true},
+                            {key: 'product_name', label: '品名', type: 'text'},
+                            {key: 'sku', label: 'SKU', type: 'text'},
+                            {key: 'quantity', label: '数量', type: 'number'},
+                            {key: 'weight', label: '重量(kg)', type: 'number'},
+                        ]
+                    },
+                    'sorting-points': {
+                        title: '收件点管理', api: '/api/sorting/points',
+                        columns: [
+                            {key: 'point_code', label: '编码'}, {key: 'name', label: '名称'},
+                            {key: 'address', label: '地址'}, {key: 'contact_person', label: '联系人'},
+                            {key: 'contact_phone', label: '联系方式'}, {key: 'status', label: '状态', type: 'status'}
+                        ],
+                        formFields: [
+                            {key: 'point_code', label: '编码', type: 'text', required: true},
+                            {key: 'name', label: '名称', type: 'text', required: true},
+                            {key: 'address', label: '地址', type: 'text'},
+                            {key: 'contact_person', label: '联系人', type: 'text'},
+                            {key: 'contact_phone', label: '联系方式', type: 'text'},
+                            {key: 'region', label: '区域', type: 'text'},
+                        ]
+                    },
+                    'sorting-tasks': {
+                        title: '分装任务', api: '/api/sorting/tasks',
+                        columns: [
+                            {key: 'task_no', label: '任务编号'}, {key: 'batch_no', label: '批次号'},
+                            {key: 'total_packages', label: '包裹数'}, {key: 'status', label: '状态', type: 'status'},
+                            {key: 'created_at', label: '创建时间', type: 'datetime'}
+                        ],
+                        formFields: [
+                            {key: 'task_no', label: '任务编号', type: 'text', required: true},
+                            {key: 'batch_no', label: '批次号', type: 'text'},
+                            {key: 'point_id', label: '收件点ID', type: 'number'},
+                            {key: 'total_packages', label: '包裹数', type: 'number'},
+                            {key: 'total_weight', label: '总重量', type: 'number'},
+                        ]
+                    },
+                    'documents': {
+                        title: '文件管理', api: '/api/document/list',
+                        columns: [
+                            {key: 'doc_no', label: '文件编号'}, {key: 'doc_type', label: '文件类型'},
+                            {key: 'title', label: '标题'}, {key: 'version', label: '版本'},
+                            {key: 'status', label: '状态', type: 'status'}, {key: 'created_at', label: '创建时间', type: 'datetime'}
+                        ],
+                        formFields: [
+                            {key: 'doc_type', label: '文件类型', type: 'select', options: [
+                                {value: 'loading', label: '装车文件'}, {value: 'customs', label: '报关文件'},
+                                {value: 'invoice', label: '商业发票'}, {value: 'packing_list', label: '装箱单'}
+                            ], required: true},
+                            {key: 'title', label: '标题', type: 'text'},
+                            {key: 'batch_no', label: '批次号', type: 'text'},
+                        ]
+                    },
+                    'transport-tasks': {
+                        title: '运输任务', api: '/api/transport/tasks',
+                        columns: [
+                            {key: 'task_no', label: '任务编号'}, {key: 'route_from', label: '出发地'},
+                            {key: 'route_to', label: '目的地'}, {key: 'status', label: '状态', type: 'status'},
+                            {key: 'created_at', label: '创建时间', type: 'datetime'}
+                        ],
+                        formFields: [
+                            {key: 'task_no', label: '任务编号', type: 'text', required: true},
+                            {key: 'route_from', label: '出发地', type: 'text', required: true},
+                            {key: 'route_to', label: '目的地', type: 'text', required: true},
+                            {key: 'planned_departure', label: '计划出发', type: 'datetime-local'},
+                            {key: 'planned_arrival', label: '计划到达', type: 'datetime-local'},
+                        ]
+                    },
+                    'transport-vehicles': {
+                        title: '车辆管理', api: '/api/transport/vehicles',
+                        columns: [
+                            {key: 'plate_no', label: '车牌号'}, {key: 'vehicle_type', label: '车辆类型'},
+                            {key: 'brand', label: '品牌'}, {key: 'load_weight', label: '载重(kg)'},
+                            {key: 'status', label: '状态', type: 'status'}
+                        ],
+                        formFields: [
+                            {key: 'plate_no', label: '车牌号', type: 'text', required: true},
+                            {key: 'vehicle_type', label: '车辆类型', type: 'text'},
+                            {key: 'brand', label: '品牌', type: 'text'},
+                            {key: 'load_weight', label: '载重(kg)', type: 'number'},
+                        ]
+                    },
+                    'customs': {
+                        title: '出口报关管理', api: '/api/customs/declarations',
+                        columns: [
+                            {key: 'declaration_no', label: '报关单号'}, {key: 'batch_no', label: '批次号'},
+                            {key: 'status', label: '状态', type: 'status'}, {key: 'submitted_at', label: '提交时间', type: 'datetime'}
+                        ],
+                        formFields: [
+                            {key: 'declaration_no', label: '报关单号', type: 'text', required: true},
+                            {key: 'batch_no', label: '批次号', type: 'text'},
+                            {key: 'transport_task_id', label: '运输任务ID', type: 'number'},
+                        ]
+                    },
+                    'clearance': {
+                        title: '进口清关管理', api: '/api/clearance/records',
+                        columns: [
+                            {key: 'clearance_no', label: '清关编号'}, {key: 'batch_no', label: '批次号'},
+                            {key: 'status', label: '状态', type: 'status'}, {key: 'submitted_at', label: '提交时间', type: 'datetime'}
+                        ],
+                        formFields: [
+                            {key: 'clearance_no', label: '清关编号', type: 'text', required: true},
+                            {key: 'batch_no', label: '批次号', type: 'text'},
+                            {key: 'declaration_no', label: '报关单号', type: 'text'},
+                        ]
+                    },
+                    'port-transport': {
+                        title: '口岸运输管理', api: '/api/port-transport/tasks',
+                        columns: [
+                            {key: 'task_no', label: '任务编号'}, {key: 'batch_no', label: '批次号'},
+                            {key: 'status', label: '状态', type: 'status'}, {key: 'departure_time', label: '出发时间', type: 'datetime'}
+                        ],
+                        formFields: [
+                            {key: 'task_no', label: '任务编号', type: 'text', required: true},
+                            {key: 'batch_no', label: '批次号', type: 'text'},
+                            {key: 'departure_time', label: '出发时间', type: 'datetime-local'},
+                            {key: 'estimated_arrival', label: '预计到达', type: 'datetime-local'},
+                        ]
+                    },
+                    'distribution': {
+                        title: '配送管理', api: '/api/distribution/tasks',
+                        columns: [
+                            {key: 'task_no', label: '任务编号'}, {key: 'package_count', label: '包裹数'},
+                            {key: 'status', label: '状态', type: 'status'}, {key: 'planned_time', label: '计划时间', type: 'datetime'}
+                        ],
+                        formFields: [
+                            {key: 'task_no', label: '任务编号', type: 'text', required: true},
+                            {key: 'point_id', label: '收件点ID', type: 'number'},
+                            {key: 'package_count', label: '包裹数', type: 'number'},
+                            {key: 'planned_time', label: '计划配送时间', type: 'datetime-local'},
+                        ]
+                    },
+                    'sign': {
+                        title: '签收入库管理', api: '/api/sign/records',
+                        columns: [
+                            {key: 'sign_no', label: '签收编号'}, {key: 'package_no', label: '包裹编号'},
+                            {key: 'signer', label: '签收人'}, {key: 'package_status', label: '包裹状态'},
+                            {key: 'sign_time', label: '签收时间', type: 'datetime'}
+                        ],
+                        formFields: [
+                            {key: 'sign_no', label: '签收编号', type: 'text', required: true},
+                            {key: 'package_no', label: '包裹编号', type: 'text'},
+                            {key: 'point_id', label: '收件点ID', type: 'number'},
+                            {key: 'signer', label: '签收人', type: 'text'},
+                            {key: 'package_status', label: '包裹状态', type: 'select', options: [
+                                {value: 'normal', label: '正常'}, {value: 'damaged', label: '破损'}, {value: 'short', label: '短缺'}
+                            ]},
+                        ]
+                    },
+                    'reconciliation': {
+                        title: '对账管理', api: '/api/reconciliation/records',
+                        columns: [
+                            {key: 'recon_no', label: '对账编号'}, {key: 'batch_no', label: '批次号'},
+                            {key: 'recon_type', label: '对账频率'}, {key: 'total_amount', label: '总金额'},
+                            {key: 'status', label: '状态', type: 'status'}
+                        ],
+                        formFields: [
+                            {key: 'recon_no', label: '对账编号', type: 'text', required: true},
+                            {key: 'batch_no', label: '批次号', type: 'text'},
+                            {key: 'recon_type', label: '对账频率', type: 'select', options: [
+                                {value: 'daily', label: '日结'}, {value: 'weekly', label: '周结'}, {value: 'monthly', label: '月结'}
+                            ]},
+                            {key: 'total_amount', label: '总金额', type: 'number'},
+                        ]
+                    },
+                    'settlement': {
+                        title: '资金结算', api: '/api/settlement/orders',
+                        columns: [
+                            {key: 'settlement_no', label: '结算编号'}, {key: 'total_amount', label: '结算金额'},
+                            {key: 'settlement_method', label: '结算方式'}, {key: 'status', label: '状态', type: 'status'}
+                        ],
+                        formFields: [
+                            {key: 'settlement_no', label: '结算编号', type: 'text', required: true},
+                            {key: 'recon_id', label: '对账记录ID', type: 'number'},
+                            {key: 'total_amount', label: '结算金额', type: 'number', required: true},
+                            {key: 'settlement_method', label: '结算方式', type: 'select', options: [
+                                {value: 'bank_transfer', label: '银行转账'}, {value: 'third_party', label: '第三方支付'}
+                            ]},
+                        ]
+                    },
+                    'payment': {
+                        title: '支付开票', api: '/api/payment/records',
+                        columns: [
+                            {key: 'payment_no', label: '支付编号'}, {key: 'amount', label: '金额'},
+                            {key: 'payment_method', label: '支付方式'}, {key: 'status', label: '状态', type: 'status'}
+                        ],
+                        formFields: [
+                            {key: 'payment_no', label: '支付编号', type: 'text', required: true},
+                            {key: 'settlement_id', label: '结算单ID', type: 'number'},
+                            {key: 'amount', label: '金额', type: 'number', required: true},
+                            {key: 'payment_method', label: '支付方式', type: 'select', options: [
+                                {value: 'bank', label: '银行转账'}, {value: 'alipay', label: '支付宝'}, {value: 'wechat', label: '微信支付'}
+                            ]},
+                        ]
+                    },
+                    'tracking': {
+                        title: '物流跟踪', api: '/api/tracking/list',
+                        columns: [
+                            {key: 'tracking_no', label: '跟踪编号'}, {key: 'order_no', label: '订单号'},
+                            {key: 'current_stage', label: '当前环节'}, {key: 'operator', label: '操作人'},
+                            {key: 'operation_time', label: '操作时间', type: 'datetime'}
+                        ]
+                    },
+                    'alerts': {
+                        title: '异常预警', api: '/api/alert/list',
+                        columns: [
+                            {key: 'alert_no', label: '预警编号'}, {key: 'alert_type', label: '预警类型'},
+                            {key: 'alert_level', label: '级别'}, {key: 'description', label: '描述'},
+                            {key: 'status', label: '状态', type: 'status'}
+                        ],
+                        formFields: [
+                            {key: 'alert_no', label: '预警编号', type: 'text', required: true},
+                            {key: 'alert_type', label: '预警类型', type: 'select', options: [
+                                {value: 'overdue_stay', label: '货物滞留超期'},
+                                {value: 'material_miss', label: '报关材料缺失'},
+                                {value: 'route_deviation', label: '运输轨迹偏离'},
+                                {value: 'package_damage', label: '包裹破损/丢失'},
+                                {value: 'sign_exception', label: '签收异常'},
+                                {value: 'recon_diff', label: '对账差异超标'},
+                            ]},
+                            {key: 'alert_level', label: '预警级别', type: 'select', options: [
+                                {value: 'low', label: '低'}, {value: 'medium', label: '中'}, {value: 'high', label: '高'}
+                            ]},
+                            {key: 'description', label: '描述', type: 'textarea'},
+                        ]
+                    },
+                    'charging': {
+                        title: '计费规则', api: '/api/charging/rules',
+                        columns: [
+                            {key: 'rule_name', label: '规则名称'}, {key: 'rule_type', label: '费用类型'},
+                            {key: 'calc_method', label: '计算方式'}, {key: 'priority', label: '优先级'},
+                            {key: 'status', label: '状态', type: 'status'}
+                        ],
+                        formFields: [
+                            {key: 'rule_name', label: '规则名称', type: 'text', required: true},
+                            {key: 'rule_type', label: '费用类型', type: 'select', options: [
+                                {value: 'transport', label: '运输费'}, {value: 'storage', label: '仓储费'},
+                                {value: 'packaging', label: '包装费'}, {value: 'fuel_surcharge', label: '燃油附加费'}
+                            ]},
+                            {key: 'calc_method', label: '计算方式', type: 'select', options: [
+                                {value: 'fixed', label: '固定费用'}, {value: 'by_weight', label: '按重量'},
+                                {value: 'by_volume', label: '按体积'}, {value: 'by_quantity', label: '按数量'}
+                            ]},
+                            {key: 'priority', label: '优先级', type: 'number'},
+                        ]
+                    },
+                    'users': {
+                        title: '用户管理', api: '/api/auth/users',
+                        columns: [
+                            {key: 'username', label: '用户名'}, {key: 'real_name', label: '真实姓名'},
+                            {key: 'email', label: '邮箱'}, {key: 'phone', label: '手机号'},
+                            {key: 'status', label: '状态', type: 'status'}
+                        ],
+                        formFields: [
+                            {key: 'username', label: '用户名', type: 'text', required: true},
+                            {key: 'real_name', label: '真实姓名', type: 'text'},
+                            {key: 'password', label: '密码', type: 'password'},
+                            {key: 'email', label: '邮箱', type: 'email'},
+                            {key: 'phone', label: '手机号', type: 'text'},
+                            {key: 'role_id', label: '角色ID', type: 'number'},
+                        ]
+                    },
+                    'logs': {
+                        title: '操作日志', api: '/api/permission/logs',
+                        columns: [
+                            {key: 'username', label: '操作人'}, {key: 'action', label: '操作'},
+                            {key: 'module', label: '模块'}, {key: 'target_desc', label: '操作对象'},
+                            {key: 'ip_address', label: 'IP地址'}, {key: 'operation_time', label: '操作时间', type: 'datetime'}
+                        ]
+                    }
                 };
 
-                const showListPage = computed(() => {
-                    return currentPage.value !== 'dashboard';
-                });
+                const showListPage = computed(() => currentPage.value !== 'dashboard');
 
-                // 自动适配部署路径（支持子路径部署）
+                // ===== Axios实例 =====
                 const basePath = window.location.pathname.replace(/\/+$/, '') || '';
 
                 const axiosInstance = axios.create({
@@ -1069,6 +1412,28 @@
                     withCredentials: true
                 });
 
+                // 请求拦截器 - 自动添加token
+                axiosInstance.interceptors.request.use(config => {
+                    const token = localStorage.getItem('auth_token');
+                    if (token) {
+                        config.headers.Authorization = `Bearer ${token}`;
+                    }
+                    return config;
+                }, error => Promise.reject(error));
+
+                // 响应拦截器 - 处理401
+                axiosInstance.interceptors.response.use(
+                    response => response,
+                    error => {
+                        if (error.response && error.response.status === 401) {
+                            localStorage.removeItem('auth_token');
+                            isLoggedIn.value = false;
+                        }
+                        return Promise.reject(error);
+                    }
+                );
+
+                // ===== 工具函数 =====
                 function getStatusColor(status) {
                     const colors = {
                         'pending': 'warning', 'processing': 'info', 'completed': 'success',
@@ -1076,73 +1441,134 @@
                         'active': 'success', 'inactive': 'secondary', 'normal': 'success',
                         'confirmed': 'primary', 'draft': 'secondary', 'final': 'success',
                         'pending_audit': 'warning', 'pending_payment': 'info', 'paid': 'success',
-                        'resolved': 'success', 'exception': 'danger'
+                        'resolved': 'success', 'exception': 'danger', 'stored': 'primary'
                     };
                     return colors[status] || 'secondary';
                 }
 
-                function getStatusLabel(status, key) {
+                function getStatusLabel(status) {
                     const labels = {
                         'pending': '待处理', 'processing': '处理中', 'completed': '已完成',
                         'approved': '已通过', 'rejected': '已驳回', 'in_transit': '运输中',
                         'active': '启用', 'inactive': '停用', 'normal': '正常',
                         'confirmed': '已确认', 'draft': '草稿', 'final': '定稿',
                         'pending_audit': '待审核', 'pending_payment': '待支付', 'paid': '已支付',
-                        'resolved': '已解决', 'exception': '异常',
+                        'resolved': '已解决', 'exception': '异常', 'stored': '已入库',
                         'collecting': '集货中', 'sorted': '已分装', 'transporting': '运输中',
                         'customs': '报关中', 'cleared': '已清关', 'distributing': '配送中',
-                        'signed': '已签收'
+                        'signed': '已签收', 'dispatching': '配送中', 'arrived': '已到达',
+                        'idle': '空闲', 'working': '工作中', 'offline': '离线', 'online': '在线',
+                        'driving': '驾驶中', 'rest': '休息', 'in_transit': '运输中',
+                        'maintenance': '维修中', 'scan': '扫码签收', 'manual': '手动签收',
+                        'damaged': '破损', 'short': '短缺', 'failed': '失败',
+                        'delivered': '已送达', 'sorted': '已分装',
+                        'pending_audit': '待审核', 'pending_payment': '待支付',
+                        'success': '成功', 'failed': '失败',
+                        'overdue_stay': '滞留超期', 'material_miss': '材料缺失',
+                        'route_deviation': '偏离路线', 'package_damage': '包裹破损',
+                        'sign_exception': '签收异常', 'recon_diff': '对账差异',
+                        'low': '低', 'medium': '中', 'high': '高',
+                        'loading': '装车文件', 'customs': '报关文件',
+                        'invoice': '商业发票', 'packing_list': '装箱单',
+                        'daily': '日结', 'weekly': '周结', 'monthly': '月结',
+                        'bank_transfer': '银行转账', 'third_party': '第三方支付',
+                        'bank': '银行转账', 'alipay': '支付宝', 'wechat': '微信支付',
+                        'transport': '运输费', 'storage': '仓储费', 'packaging': '包装费',
+                        'fuel_surcharge': '燃油附加费',
+                        'fixed': '固定费用', 'by_weight': '按重量', 'by_volume': '按体积',
+                        'by_quantity': '按数量', 'ladder': '阶梯定价', 'max_vol_weight': '体积重量取大',
                     };
                     return labels[status] || status;
                 }
 
                 function formatDate(dateStr) {
                     if (!dateStr) return '-';
+                    if (dateStr.includes('T')) dateStr = dateStr.replace('T', ' ');
+                    if (dateStr.length > 19) dateStr = dateStr.substring(0, 19);
                     return dateStr;
                 }
 
+                // ===== 验证码 =====
+                async function loadCaptcha() {
+                    try {
+                        const res = await axiosInstance.get('/api/auth/captcha');
+                        if (res.data.code === 200) {
+                            captchaImage.value = res.data.data.image;
+                            captchaCodeId.value = res.data.data.code_id;
+                            captchaCode.value = '';
+                        }
+                    } catch (err) {
+                        console.error('加载验证码失败:', err);
+                    }
+                }
+
+                // ===== 登录 =====
                 async function handleLogin() {
                     loginLoading.value = true;
                     loginError.value = '';
                     try {
-                        const res = await axiosInstance.post('/api/auth/login', loginForm);
+                        const payload = {
+                            username: loginForm.username,
+                            password: loginForm.password,
+                            remember: loginForm.remember
+                        };
+                        if (needCaptcha.value) {
+                            payload.code_id = captchaCodeId.value;
+                            payload.captcha_code = captchaCode.value;
+                        }
+                        const res = await axiosInstance.post('/api/auth/login', payload);
                         if (res.data.code === 200) {
-                            currentUser.value = res.data.data;
-                            // 获取角色名称
-                            try {
-                                const roleRes = await axiosInstance.get('/api/auth/roles');
-                                const roles = roleRes.data.data || [];
-                                const userRole = roles.find(r => r.id === res.data.data.role_id);
-                                currentUser.value.role_name = userRole ? userRole.name : '管理员';
-                            } catch(e) {
-                                currentUser.value.role_name = '管理员';
-                            }
+                            const d = res.data.data;
+                            currentUser.value = d;
+                            localStorage.setItem('auth_token', d.token);
+                            needCaptcha.value = false;
                             isLoggedIn.value = true;
                             loadDashboard();
                         } else {
                             loginError.value = res.data.message;
+                            if (res.data.need_captcha) {
+                                needCaptcha.value = true;
+                                loadCaptcha();
+                            }
                         }
                     } catch (err) {
-                        loginError.value = err.response?.data?.message || '登录失败，请检查网络';
+                        const data = err.response?.data;
+                        if (data) {
+                            loginError.value = data.message || '登录失败';
+                            if (data.need_captcha) {
+                                needCaptcha.value = true;
+                                loadCaptcha();
+                            }
+                        } else {
+                            loginError.value = '登录失败，请检查网络';
+                        }
                     } finally {
                         loginLoading.value = false;
                     }
                 }
 
                 async function handleLogout() {
-                    await axiosInstance.post('/api/auth/logout');
+                    try {
+                        await axiosInstance.post('/api/auth/logout');
+                    } catch(e) {}
+                    localStorage.removeItem('auth_token');
                     isLoggedIn.value = false;
                     currentUser.value = {};
                 }
 
+                // ===== 导航 =====
                 function navigate(page) {
                     currentPage.value = page;
                     const config = pageConfigs[page];
                     if (config) {
                         pageTitle.value = config.title;
                         tableColumns.value = config.columns;
+                        addFormFields.value = config.formFields || [];
                         searchKeyword.value = '';
                         currentPageNum.value = 1;
+                        showAddForm.value = false;
+                        showEditForm.value = false;
+                        showDetailModal.value = false;
                         loadData();
                     } else if (page === 'dashboard') {
                         pageTitle.value = '仪表盘';
@@ -1154,6 +1580,7 @@
                     openSubmenus[name] = !openSubmenus[name];
                 }
 
+                // ===== 数据加载 =====
                 async function loadData() {
                     const config = pageConfigs[currentPage.value];
                     if (!config) return;
@@ -1162,13 +1589,15 @@
                         if (searchKeyword.value) params.keyword = searchKeyword.value;
                         const res = await axiosInstance.get(config.api, { params });
                         if (res.data.code === 200) {
-                            tableData.value = res.data.data.items || res.data.data;
+                            const items = res.data.data.items || res.data.data;
+                            tableData.value = Array.isArray(items) ? items : [];
                             if (res.data.data.total !== undefined) {
-                                totalPages.value = Math.ceil(res.data.data.total / 20);
+                                totalPages.value = Math.ceil(res.data.data.total / 20) || 1;
                             }
                         }
                     } catch (err) {
                         console.error('加载数据失败:', err);
+                        tableData.value = [];
                     }
                 }
 
@@ -1179,11 +1608,11 @@
                             const d = res.data.data;
                             dashboardStats.value = [
                                 { label: '集货登记', value: d.warehouse.total, icon: 'fas fa-warehouse', bg: '#eff6ff', color: '#3b82f6', period: '总计' },
-                                { label: '分装完成率', value: d.sorting.rate + '%', icon: 'fas fa-sort', bg: '#f0fdf4', color: '#22c55e', period: d.sorting.completed + '/' + d.sorting.total },
-                                { label: '运输中', value: d.transport.in_transit, icon: 'fas fa-truck', bg: '#fefce8', color: '#eab308', period: '共' + d.transport.total + '单' },
-                                { label: '报关通过率', value: d.customs.rate + '%', icon: 'fas fa-passport', bg: '#fef2f2', color: '#ef4444', period: d.customs.approved + '/' + d.customs.total },
-                                { label: '配送完成率', value: d.distribution.rate + '%', icon: 'fas fa-truck-fast', bg: '#f5f3ff', color: '#8b5cf6', period: d.distribution.completed + '/' + d.distribution.total },
-                                { label: '签收总数', value: d.sign.total, icon: 'fas fa-signature', bg: '#ecfeff', color: '#06b6d4', period: '总计' },
+                                { label: '分装完成率', value: (d.sorting.rate || 0) + '%', icon: 'fas fa-sort', bg: '#f0fdf4', color: '#22c55e', period: (d.sorting.completed || 0) + '/' + (d.sorting.total || 0) },
+                                { label: '运输中', value: d.transport.in_transit || 0, icon: 'fas fa-truck', bg: '#fefce8', color: '#eab308', period: '共' + (d.transport.total || 0) + '单' },
+                                { label: '报关通过率', value: (d.customs.rate || 0) + '%', icon: 'fas fa-passport', bg: '#fef2f2', color: '#ef4444', period: (d.customs.approved || 0) + '/' + (d.customs.total || 0) },
+                                { label: '配送完成率', value: (d.distribution.rate || 0) + '%', icon: 'fas fa-truck-fast', bg: '#f5f3ff', color: '#8b5cf6', period: (d.distribution.completed || 0) + '/' + (d.distribution.total || 0) },
+                                { label: '签收总数', value: d.sign.total || 0, icon: 'fas fa-signature', bg: '#ecfeff', color: '#06b6d4', period: '总计' },
                             ];
                         }
                     } catch (err) {
@@ -1197,38 +1626,99 @@
                     loadData();
                 }
 
-                function viewDetail(item) {
-                    alert('详情功能开发中...\nID: ' + item.id);
+                // ===== 新增 =====
+                function openAddForm() {
+                    addFormData.value = {};
+                    showAddForm.value = true;
                 }
 
-                async function deleteItem(item) {
-                    if (!confirm('确认删除该记录？')) return;
+                async function submitAddForm() {
+                    const config = pageConfigs[currentPage.value];
+                    if (!config) return;
                     try {
-                        // 简单标记删除 - 实际应调用删除API
-                        alert('删除功能需实现具体API');
+                        const res = await axiosInstance.post(config.api, addFormData.value);
+                        if (res.data.code === 200) {
+                            showAddForm.value = false;
+                            loadData();
+                            alert('创建成功！');
+                        } else {
+                            alert(res.data.message || '创建失败');
+                        }
                     } catch (err) {
-                        console.error(err);
+                        alert(err.response?.data?.message || '创建失败，请重试');
                     }
                 }
 
-                // 检查登录状态
-                async function checkLogin() {
+                // ===== 编辑 =====
+                function openEditForm(item) {
+                    editingItem.value = item;
+                    addFormData.value = { ...item };
+                    showEditForm.value = true;
+                }
+
+                async function submitEditForm() {
+                    const config = pageConfigs[currentPage.value];
+                    if (!config || !editingItem.value) return;
                     try {
-                        const res = await axiosInstance.get('/api/auth/profile');
+                        const apiUrl = config.api + '/' + editingItem.value.id;
+                        const res = await axiosInstance.put(apiUrl, addFormData.value);
                         if (res.data.code === 200) {
-                            currentUser.value = res.data.data;
-                            try {
-                                const roleRes = await axiosInstance.get('/api/auth/roles');
-                                const roles = roleRes.data.data || [];
-                                const userRole = roles.find(r => r.id === res.data.data.role_id);
-                                currentUser.value.role_name = userRole ? userRole.name : '管理员';
-                            } catch(e) {
-                                currentUser.value.role_name = '管理员';
-                            }
-                            isLoggedIn.value = true;
-                            loadDashboard();
+                            showEditForm.value = false;
+                            editingItem.value = null;
+                            loadData();
+                            alert('更新成功！');
+                        } else {
+                            alert(res.data.message || '更新失败');
                         }
                     } catch (err) {
+                        alert(err.response?.data?.message || '更新失败，请重试');
+                    }
+                }
+
+                // ===== 删除 =====
+                async function deleteItem(item) {
+                    if (!confirm('确认删除该记录？此操作不可恢复。')) return;
+                    const config = pageConfigs[currentPage.value];
+                    if (!config) return;
+                    try {
+                        const apiUrl = config.api + '/' + item.id;
+                        const res = await axiosInstance.delete(apiUrl);
+                        if (res.data.code === 200) {
+                            loadData();
+                            alert('删除成功！');
+                        } else {
+                            alert(res.data.message || '删除失败');
+                        }
+                    } catch (err) {
+                        alert(err.response?.data?.message || '删除失败，请重试');
+                    }
+                }
+
+                // ===== 详情 =====
+                function viewDetail(item) {
+                    detailItem.value = item;
+                    showDetailModal.value = true;
+                }
+
+                // ===== 检查登录状态 =====
+                async function checkLogin() {
+                    const token = localStorage.getItem('auth_token');
+                    if (!token) {
+                        isLoggedIn.value = false;
+                        return;
+                    }
+                    try {
+                        const res = await axiosInstance.get('/api/auth/check');
+                        if (res.data.code === 200 && res.data.logged_in) {
+                            currentUser.value = res.data.data;
+                            isLoggedIn.value = true;
+                            loadDashboard();
+                        } else {
+                            localStorage.removeItem('auth_token');
+                            isLoggedIn.value = false;
+                        }
+                    } catch (err) {
+                        localStorage.removeItem('auth_token');
                         isLoggedIn.value = false;
                     }
                 }
@@ -1238,13 +1728,19 @@
                 return {
                     isLoggedIn, currentUser, currentPage, pageTitle,
                     loginForm, loginLoading, loginError,
+                    needCaptcha, captchaImage, captchaCode, loadCaptcha,
                     searchKeyword, tableData, tableColumns,
-                    currentPageNum, totalPages, showAddForm,
+                    currentPageNum, totalPages,
+                    showAddForm, addFormData, addFormFields,
+                    showEditForm, editingItem,
+                    showDetailModal, detailItem,
                     openSubmenus, dashboardStats, modules, alertCount,
                     showListPage, pageConfigs,
                     handleLogin, handleLogout, navigate,
                     toggleSubmenu, loadData, changePage,
-                    viewDetail, deleteItem,
+                    openAddForm, submitAddForm,
+                    openEditForm, submitEditForm,
+                    deleteItem, viewDetail,
                     getStatusColor, getStatusLabel, formatDate
                 };
             }

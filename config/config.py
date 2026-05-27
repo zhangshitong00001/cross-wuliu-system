@@ -35,9 +35,21 @@ class Config:
     # 日志
     LOG_DIR = os.path.join(BASE_DIR, 'logs')
     
+    # Redis配置
+    REDIS_HOST = os.environ.get('REDIS_HOST') or '127.0.0.1'
+    REDIS_PORT = os.environ.get('REDIS_PORT') or 6379
+    REDIS_DB = os.environ.get('REDIS_DB') or 0
+
     # 会话过期时间（秒）
-    SESSION_TIMEOUT = 3600 * 8
-    
+    SESSION_TIMEOUT = 7200  # 2小时
+
+    # 验证码过期时间（秒）
+    CAPTCHA_EXPIRE = 300  # 5分钟
+
+    # 登录失败锁定
+    LOGIN_FAIL_LIMIT = 5  # 5次失败后需要验证码
+    LOGIN_LOCK_MINUTES = 30  # 锁定30分钟
+
     # 备份
     BACKUP_DIR = os.path.join(BASE_DIR, 'backup')
     

@@ -27,7 +27,45 @@ def create_app(config_name='default'):
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
-    
+
+    # 添加before_request钩子，支持Token认证
+    from app.utils.redis_client import get_session_user
+    from flask_login import login_user
+
+    @app.before_request
+    def load_user_from_token():
+        """如果请求携带token，自动登录"""
+        from flask import request
+        # 跳过静态文件和健康检查
+        if request.path in ['/health', '/'] or request.path.startswith('/static/'):
+            return
+
+        # 尝试从请求中获取token
+        token = None
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            token = auth_header[7:]
+        if not token:
+            token = request.args.get('token')
+        if not token and request.is_json:
+            try:
+                data = request.get_json(silent=True)
+                if data:
+                    token = data.get('token')
+            except:
+                pass
+
+        if token:
+            user_id = get_session_user(token)
+            if user_id:
+                user = User.query.get(user_id)
+                if user and user.status == 1:
+                    # 刷新过期时间
+                    from app.utils.redis_client import save_session_token
+                    from config.config import Config
+                    save_session_token(user_id, token, Config.SESSION_TIMEOUT)
+                    login_user(user)
+
     # 注册蓝图
     from app.routes.auth import auth_bp
     from app.routes.warehouse import warehouse_bp
