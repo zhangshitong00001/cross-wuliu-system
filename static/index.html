@@ -7,183 +7,592 @@
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* ===== CSS变量 ===== */
         :root {
-            --primary-color: #2563eb;
-            --sidebar-width: 260px;
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --primary-dark: #3730a3;
+            --secondary: #0ea5e9;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #06b6d4;
+            --dark: #0f172a;
+            --darker: #020617;
+            --sidebar-width: 270px;
+            --sidebar-bg: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            --card-hover-shadow: 0 8px 30px rgba(79,70,229,0.12);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f0f2f5;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+            overflow-x: hidden;
         }
+
+        /* ===== 滚动条美化 ===== */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* ===== 侧边栏 ===== */
         .sidebar {
             position: fixed;
             top: 0;
             left: 0;
             width: var(--sidebar-width);
             height: 100vh;
-            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            background: var(--sidebar-bg);
             color: #fff;
             z-index: 1000;
             overflow-y: auto;
-            transition: all 0.3s;
+            overflow-x: hidden;
+            transition: var(--transition);
+            border-right: 1px solid rgba(255,255,255,0.05);
         }
         .sidebar-brand {
-            padding: 20px;
-            font-size: 18px;
-            font-weight: 700;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 24px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 14px;
+            background: rgba(255,255,255,0.02);
         }
-        .sidebar-brand i {
-            color: #3b82f6;
-            font-size: 24px;
-        }
-        .sidebar-menu {
-            padding: 10px 0;
-        }
-        .menu-item {
-            padding: 10px 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            border-left: 3px solid transparent;
-        }
-        .menu-item:hover, .menu-item.active {
-            background: rgba(255,255,255,0.1);
-            color: #fff;
-            border-left-color: #3b82f6;
-        }
-        .menu-item i {
-            width: 20px;
-            text-align: center;
-        }
-        .menu-sub {
-            padding-left: 20px;
-            display: none;
-        }
-        .menu-sub.show {
-            display: block;
-        }
-        .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 20px;
-            min-height: 100vh;
-        }
-        .top-bar {
-            background: #fff;
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .page-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #1e293b;
-        }
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        .card-header {
-            background: #fff;
-            border-bottom: 1px solid #e5e7eb;
-            padding: 15px 20px;
-            font-weight: 600;
-        }
-        .stat-card {
-            background: #fff;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 10px;
+        .sidebar-brand .brand-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(79,70,229,0.3);
+        }
+        .sidebar-brand .brand-text {
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sidebar-brand .brand-sub {
+            font-size: 10px;
+            color: rgba(255,255,255,0.35);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            -webkit-text-fill-color: rgba(255,255,255,0.35);
+        }
+        .sidebar-menu { padding: 12px 0; }
+        .menu-section-label {
+            padding: 16px 20px 6px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.25);
+            font-weight: 600;
+        }
+        .menu-item {
+            padding: 11px 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255,255,255,0.55);
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            font-size: 14px;
+            position: relative;
+        }
+        .menu-item:hover {
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.9);
+        }
+        .menu-item.active {
+            background: linear-gradient(90deg, rgba(79,70,229,0.15) 0%, transparent 100%);
+            color: #fff;
+            border-left-color: var(--primary-light);
+        }
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 15px;
+        }
+        .menu-item .menu-badge {
+            margin-left: auto;
+            background: rgba(239,68,68,0.2);
+            color: #fca5a5;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 10px;
+        }
+        .menu-sub {
+            padding-left: 20px;
+            display: none;
+            background: rgba(0,0,0,0.15);
+        }
+        .menu-sub.show { display: block; }
+        .menu-sub .menu-item {
+            padding: 9px 20px;
+            font-size: 13px;
+            border-left: 2px solid transparent;
+        }
+        .menu-sub .menu-item.active {
+            border-left-color: var(--primary-light);
+            background: rgba(79,70,229,0.1);
+        }
+
+        /* ===== 主内容区 ===== */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 24px 28px;
+            min-height: 100vh;
+            transition: var(--transition);
+        }
+
+        /* ===== 顶部栏 ===== */
+        .top-bar {
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 16px 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        .page-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-title .title-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: inline-block;
+        }
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            border-radius: 10px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        .user-info:hover { background: #f1f5f9; }
+        .user-name { font-weight: 600; font-size: 14px; color: #0f172a; }
+        .user-role { font-size: 12px; color: #64748b; }
+
+        /* ===== 卡片 ===== */
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 24px;
+            background: #fff;
+            transition: var(--transition);
+        }
+        .card:hover { box-shadow: var(--card-hover-shadow); }
+        .card-header {
+            background: #fff;
+            border-bottom: 1px solid #f1f5f9;
+            padding: 18px 24px;
+            font-weight: 600;
+            font-size: 15px;
+            color: #0f172a;
+            border-radius: 16px 16px 0 0 !important;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .card-body { padding: 24px; }
+
+        /* ===== 统计卡片 ===== */
+        .stat-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: var(--transition);
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--card-hover-shadow);
+        }
+        .stat-card:hover::before { opacity: 1; }
+        .stat-card .stat-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .stat-period {
+            font-size: 11px;
+            color: #94a3b8;
+            background: #f8fafc;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 500;
         }
         .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1e293b;
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
         }
         .stat-label {
             color: #64748b;
-            font-size: 14px;
+            font-size: 13px;
+            margin-top: 4px;
+            font-weight: 500;
         }
+
+        /* ===== 登录页 ===== */
         .login-page {
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .login-page::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(79,70,229,0.15) 0%, transparent 70%);
+            top: -200px;
+            right: -200px;
+            border-radius: 50%;
+        }
+        .login-page::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(14,165,233,0.1) 0%, transparent 70%);
+            bottom: -100px;
+            left: -100px;
+            border-radius: 50%;
         }
         .login-card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 40px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 44px 40px;
             width: 420px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255,255,255,0.1);
         }
         .login-title {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
+        }
+        .login-title .logo-circle {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 32px;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(79,70,229,0.3);
         }
         .login-title h2 {
-            font-weight: 700;
-            color: #1e293b;
+            font-weight: 800;
+            color: #0f172a;
+            font-size: 24px;
         }
         .login-title p {
             color: #64748b;
-            margin-top: 5px;
+            margin-top: 6px;
+            font-size: 14px;
         }
-        .table th {
+        .login-card .form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: var(--transition);
+            background: #f8fafc;
+        }
+        .login-card .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79,70,229,0.1);
+            background: #fff;
+        }
+        .login-card .form-label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+        .login-card .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-weight: 600;
+            font-size: 15px;
+            transition: var(--transition);
+        }
+        .login-card .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(79,70,229,0.3);
+        }
+
+        /* ===== 表格 ===== */
+        .table {
+            margin-bottom: 0;
+        }
+        .table thead th {
             background: #f8fafc;
             font-weight: 600;
-        }
-        .badge-status {
-            padding: 4px 8px;
-            border-radius: 4px;
             font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 12px 16px;
         }
-        .content-panel {
-            display: none;
+        .table tbody td {
+            padding: 12px 16px;
+            vertical-align: middle;
+            font-size: 14px;
+            border-bottom: 1px solid #f1f5f9;
         }
-        .content-panel.active {
-            display: block;
+        .table tbody tr {
+            transition: var(--transition);
         }
+        .table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        /* ===== 状态标签 ===== */
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .badge.bg-warning { background: #fef3c7 !important; color: #92400e !important; }
+        .badge.bg-success { background: #d1fae5 !important; color: #065f46 !important; }
+        .badge.bg-info { background: #cffafe !important; color: #155e75 !important; }
+        .badge.bg-danger { background: #fee2e2 !important; color: #991b1b !important; }
+        .badge.bg-primary { background: #e0e7ff !important; color: #3730a3 !important; }
+        .badge.bg-secondary { background: #f1f5f9 !important; color: #475569 !important; }
+
+        /* ===== 搜索栏 ===== */
         .search-bar {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
+        .search-bar .form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+        .search-bar .form-control:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 4px rgba(79,70,229,0.08);
+        }
+        .search-bar .btn {
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 500;
+        }
+
+        /* ===== 分页 ===== */
+        .pagination {
+            margin-top: 20px;
+            gap: 4px;
+        }
+        .page-link {
+            border: none;
+            border-radius: 8px !important;
+            padding: 8px 14px;
+            font-size: 13px;
+            color: #475569;
+            transition: var(--transition);
+        }
+        .page-item.active .page-link {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(79,70,229,0.25);
+        }
+        .page-item:not(.active) .page-link:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+        }
+
+        /* ===== 功能模块卡片 ===== */
+        .module-card {
+            border: none;
+            border-radius: 14px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            background: #fff;
+            height: 100%;
+        }
+        .module-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--card-hover-shadow);
+        }
+        .module-card .card-body {
+            text-align: center;
+            padding: 24px 16px;
+        }
+        .module-card .module-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 24px;
+            transition: var(--transition);
+        }
+        .module-card:hover .module-icon {
+            transform: scale(1.1);
+        }
+        .module-card h6 {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1e293b;
+            margin-top: 8px;
+        }
+
+        /* ===== 快捷操作按钮 ===== */
+        .quick-action-btn {
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: var(--transition);
+            border: 2px solid #e2e8f0;
+            background: #fff;
+        }
+        .quick-action-btn:hover {
+            border-color: var(--primary);
+            background: #f8fafc;
+            transform: translateX(4px);
+        }
+
+        /* ===== 面板切换 ===== */
+        .content-panel { display: none; }
+        .content-panel.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== 按钮美化 ===== */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            border-radius: 10px;
+            padding: 8px 18px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(79,70,229,0.3);
+        }
+        .btn-outline-primary {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            border-radius: 10px;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+            border-radius: 8px;
+        }
+
+        /* ===== 响应式 ===== */
         @media (max-width: 768px) {
-            .sidebar {
-                width: 0;
-                overflow: hidden;
-            }
-            .main-content {
-                margin-left: 0;
-            }
+            .sidebar { width: 0; overflow: hidden; }
+            .main-content { margin-left: 0; padding: 16px; }
+            .login-card { width: 92%; padding: 32px 24px; }
+            .stat-value { font-size: 22px; }
         }
     </style>
 </head>
@@ -221,20 +630,25 @@
 
         <!-- 主界面 -->
         <div v-else>
-            <!-- 侧边栏 -->
+            <!-- ===== 侧边栏 ===== -->
             <div class="sidebar">
                 <div class="sidebar-brand">
-                    <i class="fas fa-ship"></i>
-                    <span>跨境物流系统</span>
+                    <div class="brand-icon"><i class="fas fa-ship"></i></div>
+                    <div>
+                        <div class="brand-text">跨境物流系统</div>
+                        <div class="brand-sub">Cross-Border Logistics</div>
+                    </div>
                 </div>
                 <div class="sidebar-menu">
+                    <div class="menu-section-label">概览</div>
                     <a class="menu-item" :class="{active: currentPage === 'dashboard'}" @click="navigate('dashboard')">
                         <i class="fas fa-chart-pie"></i> 仪表盘
                     </a>
-                    
+
+                    <div class="menu-section-label">仓储物流</div>
                     <div class="menu-item" @click="toggleSubmenu('warehouse')">
                         <i class="fas fa-warehouse"></i> 云仓集货管理
-                        <i class="fas fa-chevron-down ms-auto" style="font-size: 12px;"></i>
+                        <i class="fas fa-chevron-down ms-auto" style="font-size: 11px; opacity:0.5;"></i>
                     </div>
                     <div class="menu-sub" :class="{show: openSubmenus.warehouse}">
                         <a class="menu-item" :class="{active: currentPage === 'warehouse-receipt'}" @click="navigate('warehouse-receipt')">收货登记</a>
@@ -244,7 +658,7 @@
 
                     <div class="menu-item" @click="toggleSubmenu('sorting')">
                         <i class="fas fa-sort-amount-up"></i> 分装管理
-                        <i class="fas fa-chevron-down ms-auto" style="font-size: 12px;"></i>
+                        <i class="fas fa-chevron-down ms-auto" style="font-size: 11px; opacity:0.5;"></i>
                     </div>
                     <div class="menu-sub" :class="{show: openSubmenus.sorting}">
                         <a class="menu-item" :class="{active: currentPage === 'sorting-points'}" @click="navigate('sorting-points')">收件点管理</a>
@@ -254,10 +668,11 @@
                     <a class="menu-item" :class="{active: currentPage === 'documents'}" @click="navigate('documents')">
                         <i class="fas fa-file-alt"></i> 文件生成管理
                     </a>
-                    
+
+                    <div class="menu-section-label">运输关务</div>
                     <div class="menu-item" @click="toggleSubmenu('transport')">
                         <i class="fas fa-truck"></i> 装车运输管理
-                        <i class="fas fa-chevron-down ms-auto" style="font-size: 12px;"></i>
+                        <i class="fas fa-chevron-down ms-auto" style="font-size: 11px; opacity:0.5;"></i>
                     </div>
                     <div class="menu-sub" :class="{show: openSubmenus.transport}">
                         <a class="menu-item" :class="{active: currentPage === 'transport-tasks'}" @click="navigate('transport-tasks')">运输任务</a>
@@ -280,9 +695,10 @@
                         <i class="fas fa-signature"></i> 签收入库管理
                     </a>
 
+                    <div class="menu-section-label">财务结算</div>
                     <div class="menu-item" @click="toggleSubmenu('finance')">
                         <i class="fas fa-coins"></i> 财务结算
-                        <i class="fas fa-chevron-down ms-auto" style="font-size: 12px;"></i>
+                        <i class="fas fa-chevron-down ms-auto" style="font-size: 11px; opacity:0.5;"></i>
                     </div>
                     <div class="menu-sub" :class="{show: openSubmenus.finance}">
                         <a class="menu-item" :class="{active: currentPage === 'reconciliation'}" @click="navigate('reconciliation')">对账管理</a>
@@ -290,11 +706,13 @@
                         <a class="menu-item" :class="{active: currentPage === 'payment'}" @click="navigate('payment')">支付开票</a>
                     </div>
 
+                    <div class="menu-section-label">系统管理</div>
                     <a class="menu-item" :class="{active: currentPage === 'tracking'}" @click="navigate('tracking')">
                         <i class="fas fa-search-location"></i> 物流跟踪
                     </a>
                     <a class="menu-item" :class="{active: currentPage === 'alerts'}" @click="navigate('alerts')">
                         <i class="fas fa-bell"></i> 异常预警
+                        <span class="menu-badge" v-if="alertCount > 0">{{ alertCount }}</span>
                     </a>
                     <a class="menu-item" :class="{active: currentPage === 'charging'}" @click="navigate('charging')">
                         <i class="fas fa-calculator"></i> 计费规则
@@ -308,46 +726,60 @@
                 </div>
             </div>
 
-            <!-- 主内容 -->
+            <!-- ===== 主内容 ===== -->
             <div class="main-content">
                 <!-- 顶部栏 -->
                 <div class="top-bar">
-                    <div class="page-title">{{ pageTitle }}</div>
-                    <div class="d-flex align-items-center gap-3">
-                        <span><i class="fas fa-user"></i> {{ currentUser.real_name || currentUser.username }}</span>
-                        <button class="btn btn-outline-secondary btn-sm" @click="handleLogout">
-                            <i class="fas fa-sign-out-alt"></i> 退出
+                    <div class="page-title">
+                        <span class="title-dot"></span>
+                        {{ pageTitle }}
+                    </div>
+                    <div class="top-bar-right">
+                        <div class="user-info" @click="navigate('users')">
+                            <div class="user-avatar">{{ (currentUser.real_name || currentUser.username).charAt(0) }}</div>
+                            <div>
+                                <div class="user-name">{{ currentUser.real_name || currentUser.username }}</div>
+                                <div class="user-role">{{ currentUser.role_name || '管理员' }}</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm" @click="handleLogout" title="退出登录">
+                            <i class="fas fa-sign-out-alt"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- 仪表盘 -->
+                <!-- ===== 仪表盘 ===== -->
                 <div class="content-panel" :class="{active: currentPage === 'dashboard'}">
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-3" v-for="stat in dashboardStats" :key="stat.label">
+                    <div class="row g-4 mb-4">
+                        <div class="col-xl-2 col-lg-4 col-md-6" v-for="stat in dashboardStats" :key="stat.label">
                             <div class="stat-card">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="stat-top">
                                     <div class="stat-icon" :style="{background: stat.bg}">
                                         <i :class="stat.icon" :style="{color: stat.color}"></i>
                                     </div>
-                                    <span class="badge bg-light text-dark">{{ stat.period }}</span>
+                                    <span class="stat-period">{{ stat.period }}</span>
                                 </div>
                                 <div class="stat-value">{{ stat.value }}</div>
                                 <div class="stat-label">{{ stat.label }}</div>
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-8">
+
+                    <div class="row g-4">
+                        <div class="col-lg-8">
                             <div class="card">
-                                <div class="card-header">系统功能模块</div>
+                                <div class="card-header">
+                                    <span><i class="fas fa-th-large me-2" style="color: var(--primary);"></i>系统功能模块</span>
+                                </div>
                                 <div class="card-body">
                                     <div class="row g-3">
-                                        <div class="col-md-4" v-for="mod in modules" :key="mod.name">
-                                            <div class="card h-100" style="cursor:pointer" @click="navigate(mod.page)">
-                                                <div class="card-body text-center py-4">
-                                                    <i :class="mod.icon" style="font-size: 32px; color: #3b82f6;"></i>
-                                                    <h6 class="mt-2">{{ mod.name }}</h6>
+                                        <div class="col-md-4 col-6" v-for="mod in modules" :key="mod.name">
+                                            <div class="module-card" @click="navigate(mod.page)">
+                                                <div class="card-body">
+                                                    <div class="module-icon" :style="{background: mod.bg || '#e0e7ff'}">
+                                                        <i :class="mod.icon" :style="{color: mod.color || '#4f46e5'}"></i>
+                                                    </div>
+                                                    <h6>{{ mod.name }}</h6>
                                                 </div>
                                             </div>
                                         </div>
@@ -355,20 +787,46 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-lg-4">
                             <div class="card">
-                                <div class="card-header">快捷操作</div>
+                                <div class="card-header">
+                                    <span><i class="fas fa-bolt me-2" style="color: var(--warning);"></i>快捷操作</span>
+                                </div>
                                 <div class="card-body">
-                                    <div class="d-grid gap-2">
-                                        <button class="btn btn-outline-primary" @click="navigate('warehouse-receipt')">
-                                            <i class="fas fa-plus"></i> 新建收货登记
+                                    <div class="d-grid gap-3">
+                                        <button class="quick-action-btn text-start" @click="navigate('warehouse-receipt')">
+                                            <i class="fas fa-plus-circle me-2" style="color: var(--primary);"></i> 新建收货登记
                                         </button>
-                                        <button class="btn btn-outline-success" @click="navigate('transport-tasks')">
-                                            <i class="fas fa-truck"></i> 新建运输任务
+                                        <button class="quick-action-btn text-start" @click="navigate('transport-tasks')">
+                                            <i class="fas fa-truck me-2" style="color: var(--success);"></i> 新建运输任务
                                         </button>
-                                        <button class="btn btn-outline-info" @click="navigate('documents')">
-                                            <i class="fas fa-file"></i> 生成报关文件
+                                        <button class="quick-action-btn text-start" @click="navigate('documents')">
+                                            <i class="fas fa-file-export me-2" style="color: var(--secondary);"></i> 生成报关文件
                                         </button>
+                                        <button class="quick-action-btn text-start" @click="navigate('sorting-points')">
+                                            <i class="fas fa-map-marker-alt me-2" style="color: var(--danger);"></i> 管理收件点
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <span><i class="fas fa-info-circle me-2" style="color: var(--info);"></i>系统信息</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span style="color:#64748b;font-size:13px;">运行状态</span>
+                                        <span class="badge" style="background:#d1fae5!important;color:#065f46!important;">
+                                            <i class="fas fa-circle me-1" style="font-size:8px;"></i> 正常
+                                        </span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span style="color:#64748b;font-size:13px;">数据库</span>
+                                        <span style="font-size:13px;font-weight:500;">PostgreSQL</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span style="color:#64748b;font-size:13px;">版本</span>
+                                        <span style="font-size:13px;font-weight:500;">v1.0.0</span>
                                     </div>
                                 </div>
                             </div>
@@ -376,11 +834,11 @@
                     </div>
                 </div>
 
-                <!-- 通用列表页面模板 -->
+                <!-- ===== 通用列表页面模板 ===== -->
                 <div class="content-panel" :class="{active: showListPage}">
                     <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <span>{{ pageTitle }}</span>
+                        <div class="card-header">
+                            <span><i class="fas fa-list me-2" style="color: var(--primary);"></i>{{ pageTitle }}</span>
                             <button class="btn btn-primary btn-sm" @click="showAddForm = true" v-if="currentPage !== 'logs' && currentPage !== 'tracking'">
                                 <i class="fas fa-plus"></i> 新增
                             </button>
@@ -388,47 +846,59 @@
                         <div class="card-body">
                             <!-- 搜索栏 -->
                             <div class="search-bar">
-                                <input type="text" class="form-control" v-model="searchKeyword" placeholder="搜索关键字..." @keyup.enter="loadData">
-                                <button class="btn btn-outline-primary" @click="loadData"><i class="fas fa-search"></i> 搜索</button>
+                                <div class="input-group" style="max-width: 380px;">
+                                    <span class="input-group-text" style="background:#f8fafc;border:2px solid #e2e8f0;border-right:none;border-radius:10px 0 0 10px;">
+                                        <i class="fas fa-search" style="color:#94a3b8;"></i>
+                                    </span>
+                                    <input type="text" class="form-control" v-model="searchKeyword" placeholder="搜索关键字..." @keyup.enter="loadData" style="border-left:none;">
+                                </div>
+                                <button class="btn btn-primary" @click="loadData"><i class="fas fa-search me-1"></i> 搜索</button>
                             </div>
                             <!-- 表格 -->
                             <div class="table-responsive">
-                                <table class="table table-hover">
+                                <table class="table table-hover align-middle">
                                     <thead>
                                         <tr>
                                             <th v-for="col in tableColumns" :key="col.key">{{ col.label }}</th>
-                                            <th>操作</th>
+                                            <th style="width:120px;">操作</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr v-for="item in tableData" :key="item.id">
                                             <td v-for="col in tableColumns" :key="col.key">
                                                 <span v-if="col.type === 'status'" :class="'badge bg-' + getStatusColor(item[col.key])">{{ getStatusLabel(item[col.key], col.key) }}</span>
-                                                <span v-else-if="col.type === 'datetime'">{{ formatDate(item[col.key]) }}</span>
-                                                <span v-else>{{ item[col.key] }}</span>
+                                                <span v-else-if="col.type === 'datetime'" style="color:#64748b;font-size:13px;">{{ formatDate(item[col.key]) }}</span>
+                                                <span v-else style="font-weight:500;">{{ item[col.key] }}</span>
                                             </td>
                                             <td>
-                                                <button class="btn btn-sm btn-outline-primary me-1" @click="viewDetail(item)">详情</button>
-                                                <button class="btn btn-sm btn-outline-danger" @click="deleteItem(item)" v-if="currentPage !== 'logs'">删除</button>
+                                                <button class="btn btn-sm btn-outline-primary me-1" @click="viewDetail(item)" title="查看详情">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" @click="deleteItem(item)" v-if="currentPage !== 'logs'" title="删除">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                         <tr v-if="tableData.length === 0">
-                                            <td :colspan="tableColumns.length + 1" class="text-center text-muted py-4">暂无数据</td>
+                                            <td :colspan="tableColumns.length + 1" class="text-center py-5">
+                                                <i class="fas fa-inbox" style="font-size: 40px; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
+                                                <span style="color: #94a3b8;">暂无数据</span>
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                             <!-- 分页 -->
-                            <nav v-if="totalPages > 1">
-                                <ul class="pagination justify-content-center">
+                            <nav v-if="totalPages > 1" class="d-flex justify-content-center mt-4">
+                                <ul class="pagination">
                                     <li class="page-item" :class="{disabled: currentPageNum <= 1}">
-                                        <a class="page-link" @click="changePage(currentPageNum - 1)">上一页</a>
+                                        <a class="page-link" @click="changePage(currentPageNum - 1)"><i class="fas fa-chevron-left"></i></a>
                                     </li>
                                     <li class="page-item" v-for="p in totalPages" :key="p" :class="{active: p === currentPageNum}">
                                         <a class="page-link" @click="changePage(p)">{{ p }}</a>
                                     </li>
                                     <li class="page-item" :class="{disabled: currentPageNum >= totalPages}">
-                                        <a class="page-link" @click="changePage(currentPageNum + 1)">下一页</a>
+                                        <a class="page-link" @click="changePage(currentPageNum + 1)"><i class="fas fa-chevron-right"></i></a>
                                     </li>
                                 </ul>
                             </nav>
@@ -463,19 +933,20 @@
                 });
                 const dashboardStats = ref([]);
                 const modules = ref([
-                    {name: '云仓集货', icon: 'fas fa-warehouse', page: 'warehouse-receipt'},
-                    {name: '分装管理', icon: 'fas fa-sort-amount-up', page: 'sorting-tasks'},
-                    {name: '文件生成', icon: 'fas fa-file-alt', page: 'documents'},
-                    {name: '装车运输', icon: 'fas fa-truck', page: 'transport-tasks'},
-                    {name: '出口报关', icon: 'fas fa-passport', page: 'customs'},
-                    {name: '进口清关', icon: 'fas fa-clipboard-check', page: 'clearance'},
-                    {name: '配送管理', icon: 'fas fa-truck-fast', page: 'distribution'},
-                    {name: '签收入库', icon: 'fas fa-signature', page: 'sign'},
-                    {name: '对账结算', icon: 'fas fa-coins', page: 'reconciliation'},
-                    {name: '物流跟踪', icon: 'fas fa-search-location', page: 'tracking'},
-                    {name: '异常预警', icon: 'fas fa-bell', page: 'alerts'},
-                    {name: '计费规则', icon: 'fas fa-calculator', page: 'charging'},
+                    {name: '云仓集货', icon: 'fas fa-warehouse', page: 'warehouse-receipt', bg: '#e0e7ff', color: '#4f46e5'},
+                    {name: '分装管理', icon: 'fas fa-sort-amount-up', page: 'sorting-tasks', bg: '#d1fae5', color: '#059669'},
+                    {name: '文件生成', icon: 'fas fa-file-alt', page: 'documents', bg: '#fef3c7', color: '#d97706'},
+                    {name: '装车运输', icon: 'fas fa-truck', page: 'transport-tasks', bg: '#cffafe', color: '#0891b2'},
+                    {name: '出口报关', icon: 'fas fa-passport', page: 'customs', bg: '#fce7f3', color: '#db2777'},
+                    {name: '进口清关', icon: 'fas fa-clipboard-check', page: 'clearance', bg: '#ede9fe', color: '#7c3aed'},
+                    {name: '配送管理', icon: 'fas fa-truck-fast', page: 'distribution', bg: '#dbeafe', color: '#2563eb'},
+                    {name: '签收入库', icon: 'fas fa-signature', page: 'sign', bg: '#d1fae5', color: '#16a34a'},
+                    {name: '对账结算', icon: 'fas fa-coins', page: 'reconciliation', bg: '#fef3c7', color: '#f59e0b'},
+                    {name: '物流跟踪', icon: 'fas fa-search-location', page: 'tracking', bg: '#e0e7ff', color: '#6366f1'},
+                    {name: '异常预警', icon: 'fas fa-bell', page: 'alerts', bg: '#fee2e2', color: '#ef4444'},
+                    {name: '计费规则', icon: 'fas fa-calculator', page: 'charging', bg: '#f3e8ff', color: '#a855f7'},
                 ]);
+                const alertCount = ref(0);
 
                 const loginForm = reactive({
                     username: '',
@@ -637,6 +1108,15 @@
                         const res = await axiosInstance.post('/api/auth/login', loginForm);
                         if (res.data.code === 200) {
                             currentUser.value = res.data.data;
+                            // 获取角色名称
+                            try {
+                                const roleRes = await axiosInstance.get('/api/auth/roles');
+                                const roles = roleRes.data.data || [];
+                                const userRole = roles.find(r => r.id === res.data.data.role_id);
+                                currentUser.value.role_name = userRole ? userRole.name : '管理员';
+                            } catch(e) {
+                                currentUser.value.role_name = '管理员';
+                            }
                             isLoggedIn.value = true;
                             loadDashboard();
                         } else {
@@ -737,6 +1217,14 @@
                         const res = await axiosInstance.get('/api/auth/profile');
                         if (res.data.code === 200) {
                             currentUser.value = res.data.data;
+                            try {
+                                const roleRes = await axiosInstance.get('/api/auth/roles');
+                                const roles = roleRes.data.data || [];
+                                const userRole = roles.find(r => r.id === res.data.data.role_id);
+                                currentUser.value.role_name = userRole ? userRole.name : '管理员';
+                            } catch(e) {
+                                currentUser.value.role_name = '管理员';
+                            }
                             isLoggedIn.value = true;
                             loadDashboard();
                         }
@@ -752,7 +1240,7 @@
                     loginForm, loginLoading, loginError,
                     searchKeyword, tableData, tableColumns,
                     currentPageNum, totalPages, showAddForm,
-                    openSubmenus, dashboardStats, modules,
+                    openSubmenus, dashboardStats, modules, alertCount,
                     showListPage, pageConfigs,
                     handleLogin, handleLogout, navigate,
                     toggleSubmenu, loadData, changePage,
