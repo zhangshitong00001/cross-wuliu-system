@@ -589,7 +589,7 @@
                     return currentPage.value !== 'dashboard';
                 });
 
-                // 自动适配部署路径（支持 /logistics/ 子路径）
+                // 自动适配部署路径（支持子路径部署）
                 const basePath = window.location.pathname.replace(/\/+$/, '') || '';
 
                 const axiosInstance = axios.create({
