@@ -589,8 +589,11 @@
                     return currentPage.value !== 'dashboard';
                 });
 
+                // 自动适配部署路径（支持 /logistics/ 子路径）
+                const basePath = window.location.pathname.replace(/\/+$/, '') || '';
+
                 const axiosInstance = axios.create({
-                    baseURL: window.location.origin,
+                    baseURL: window.location.origin + basePath,
                     timeout: 30000,
                     withCredentials: true
                 });
