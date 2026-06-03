@@ -746,14 +746,7 @@
                 <!-- 登录表单 -->
                 <form @submit.prevent="handleLogin" v-if="loginTab==='login'">
                     <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <label class="form-label mb-0">{{ I18n.t('login.username') }}</label>
-                            <a href="#" @click.prevent="loginForm.roleType=loginForm.roleType==='admin'?'user':'admin'" class="text-decoration-none" style="font-size:13px;">
-                                <i :class="loginForm.roleType==='admin'?'fas fa-user-shield':'fas fa-user'" style="color:var(--primary);"></i>
-                                {{ loginForm.roleType==='admin' ? I18n.t('login.adminLogin') : I18n.t('login.userLogin') }}
-                                <i class="fas fa-exchange-alt ms-1" style="font-size:10px;opacity:0.5;"></i>
-                            </a>
-                        </div>
+                        <label class="form-label">{{ I18n.t('login.username') }}</label>
                         <input type="text" class="form-control form-control-lg" v-model="loginForm.username" :placeholder="I18n.t('login.username.placeholder')" required>
                     </div>
                     <div class="mb-3">
@@ -770,10 +763,16 @@
                     <div class="alert alert-danger" v-if="loginError">
                         <i class="fas fa-exclamation-circle me-1"></i> {{ loginError }}
                     </div>
-                    <button type="submit" class="btn btn-primary btn-lg w-100" :disabled="loginLoading">
-                        <span v-if="loginLoading" class="spinner-border spinner-border-sm me-2"></span>
-                        <span v-else><i class="fas fa-sign-in-alt me-2"></i>{{ I18n.t('login.btn') }}</span>
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-primary btn-lg flex-fill" @click="loginForm.roleType='admin';handleLogin()" :disabled="loginLoading">
+                            <span v-if="loginLoading" class="spinner-border spinner-border-sm me-2"></span>
+                            <span v-else><i class="fas fa-user-shield me-1"></i>{{ I18n.t('login.adminLogin') }}</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-lg flex-fill" @click="loginForm.roleType='user';handleLogin()" :disabled="loginLoading">
+                            <span v-if="loginLoading" class="spinner-border spinner-border-sm me-2"></span>
+                            <span v-else><i class="fas fa-user me-1"></i>{{ I18n.t('login.userLogin') }}</span>
+                        </button>
+                    </div>
                 </form>
 
                 <!-- 注册表单 -->
