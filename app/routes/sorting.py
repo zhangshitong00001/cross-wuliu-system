@@ -386,7 +386,7 @@ def import_tasks():
             total_packages=safe_int(row.get('total_packages'), 0),
             total_weight=safe_float(row.get('total_weight')),
             total_volume=safe_float(row.get('total_volume')),
-            assigned_to=safe_str(row.get('assigned_to')),
+            assigned_to=safe_int(row.get('assigned_to')),
             remark=safe_str(row.get('remark')),
             status='pending'
         )

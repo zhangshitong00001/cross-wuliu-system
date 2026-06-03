@@ -11,13 +11,14 @@ class Config:
     
     # PostgreSQL数据库配置
     DB_USER = os.environ.get('DB_USER') or 'zhangshitong'
-    DB_PASSWORD = os.environ.get('DB_PASSWORD') or 'zhangshitong123'
+    DB_PASSWORD = os.environ.get('DB_PASSWORD') or 'Qq981997@'
     DB_HOST = os.environ.get('DB_HOST') or '127.0.0.1'
     DB_PORT = os.environ.get('DB_PORT') or '5432'
     DB_NAME = os.environ.get('DB_NAME') or 'logistics_db'
 
+    from urllib.parse import quote_plus
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        f'postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+        f'postgresql+psycopg2://{DB_USER}:{quote_plus(DB_PASSWORD)}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_size': 10,

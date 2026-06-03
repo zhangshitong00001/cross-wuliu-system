@@ -3,7 +3,7 @@
 """
 from datetime import datetime
 from flask import Blueprint, request, jsonify
-from flask_login import login_required
+from flask_login import login_required, current_user
 from app.models import ChargingRule, OperationLog
 from app import db
 from app.utils.excel_import import (

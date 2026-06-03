@@ -55,18 +55,37 @@ def parse_excel(file_storage, sheet_index=0, header_row=1):
     if header_index >= len(all_rows):
         return [], []
 
-    raw_headers = all_rows[header_index]
-    columns = []
-    for h in raw_headers:
-        if h is None:
-            columns.append('')
-        else:
-            col = str(h).strip()
-            columns.append(col)
+    # 检测是否存在隐藏的字段名行（Row2全部由英文字段名组成，如 sku, product_name）
+    _field_name_re = re.compile(r'^[a-z][a-z0-9_]*$')
+    field_name_row = None
+    data_start = header_index + 1
+    if data_start < len(all_rows):
+        maybe_fields = all_rows[data_start]
+        if maybe_fields and all(
+            v is not None and isinstance(v, str) and _field_name_re.match(str(v).strip())
+            for v in maybe_fields
+        ):
+            field_name_row = [str(v).strip() for v in maybe_fields]
+            data_start += 1  # 跳过字段名行，数据从再下一行开始
+
+    # 列名：优先字段名行，否则用表头行（兼容旧模板）
+    if field_name_row:
+        columns = field_name_row
+    else:
+        raw_headers = all_rows[header_index]
+        columns = []
+        for h in raw_headers:
+            if h is None:
+                columns.append('')
+            else:
+                col = str(h).strip()
+                if col.endswith(' *'):
+                    col = col[:-2]
+                columns.append(col)
 
     # 提取数据行
     data_rows = []
-    for row in all_rows[header_index + 1:]:
+    for row in all_rows[data_start:]:
         # 跳过全空行
         if all(cell is None or (isinstance(cell, str) and cell.strip() == '') for cell in row):
             continue
@@ -140,6 +159,7 @@ def safe_datetime(value, default=None):
         return datetime.combine(value, datetime.min.time())
     try:
         for fmt in ('%Y-%m-%d %H:%M:%S', '%Y/%m/%d %H:%M:%S',
+                     '%Y-%m-%d %H:%M', '%Y/%m/%d %H:%M',
                      '%Y-%m-%d', '%Y/%m/%d'):
             try:
                 return datetime.strptime(str(value).strip(), fmt)
@@ -381,6 +401,11 @@ class ExcelImporter:
                     'message': f'处理异常: {str(e)}'
                 })
                 traceback.print_exc()
+                # 数据库异常后回滚session，避免影响后续操作
+                try:
+                    db.session.rollback()
+                except Exception:
+                    pass
 
         return {
             'success': success_count,
@@ -440,21 +465,34 @@ def get_import_template(fields, sheet_name='Sheet1'):
     ws = wb.active
     ws.title = sheet_name
 
-    # 表头
-    headers = []
+    # Row 1: 中文显示名（用户可见，与页面表头一致），加*标记必填
+    # Row 2: 英文字段名（隐藏，供程序解析用）
+    from openpyxl.styles import Font, PatternFill, Alignment
+    display_headers = []
+    field_headers = []
     for f in fields:
-        header = f['display_name']
+        dh = f.get('display_name', f['name'])
         if f.get('required'):
-            header += ' *'
-        headers.append(header)
-    ws.append(headers)
+            dh += ' *'
+        display_headers.append(dh)
+        field_headers.append(f['name'])
+    ws.append(display_headers)
+    ws.append(field_headers)
 
-    # 示例行（如果有）
-    if any(f.get('example') is not None for f in fields):
-        example_row = []
-        for f in fields:
-            example_row.append(f.get('example', ''))
-        ws.append(example_row)
+    # 隐藏字段名行（用户看不到，但程序可读取）
+    ws.row_dimensions[2].hidden = True
+
+    # 添加字段说明作为批注（可选）
+    from openpyxl.comments import Comment
+    for col_idx, f in enumerate(fields, 1):
+        note_parts = []
+        if f.get('example') is not None:
+            note_parts.append(f'示例: {f.get("example")}')
+        if note_parts:
+            cell = ws.cell(row=1, column=col_idx)
+            cell.comment = Comment('\n'.join(note_parts), '系统')
+            cell.comment.width = 250
+            cell.comment.height = 100
 
     # 设置列宽
     for col_idx, f in enumerate(fields, 1):
@@ -466,7 +504,6 @@ def get_import_template(fields, sheet_name='Sheet1'):
         ws.column_dimensions[col_letter].width = min(estimated_width + 4, 40)
 
     # 表头样式
-    from openpyxl.styles import Font, PatternFill, Alignment
     header_fill = PatternFill(start_color='4472C4', end_color='4472C4', fill_type='solid')
     header_font = Font(color='FFFFFF', bold=True, size=11)
     for cell in ws[1]:
