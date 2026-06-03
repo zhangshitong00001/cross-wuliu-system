@@ -1070,18 +1070,20 @@
                                 </table>
                             </div>
                             <!-- 分页 -->
-                            <nav v-if="totalPages > 1" class="d-flex justify-content-center mt-4">
-                                <ul class="pagination">
+                            <nav v-if="tableData.length > 0" class="d-flex justify-content-center align-items-center gap-3 mt-4">
+                                <small class="text-muted">{{ I18n.t('common.pageInfo', {page: currentPageNum, total: totalPages}) }}</small>
+                                <ul class="pagination mb-0">
                                     <li class="page-item" :class="{disabled: currentPageNum <= 1}">
                                         <a class="page-link" @click="changePage(currentPageNum - 1)"><i class="fas fa-chevron-left"></i></a>
                                     </li>
-                                    <li class="page-item" v-for="p in totalPages" :key="p" :class="{active: p === currentPageNum}">
+                                    <li class="page-item" v-for="p in Math.min(totalPages, 7)" :key="p" :class="{active: p === currentPageNum}">
                                         <a class="page-link" @click="changePage(p)">{{ p }}</a>
                                     </li>
                                     <li class="page-item" :class="{disabled: currentPageNum >= totalPages}">
                                         <a class="page-link" @click="changePage(currentPageNum + 1)"><i class="fas fa-chevron-right"></i></a>
                                     </li>
                                 </ul>
+                                <small class="text-muted">共 {{ tableData.length }} 条</small>
                             </nav>
                         </div>
                     </div>
@@ -1971,7 +1973,10 @@
                         if (res.data.code === 200) {
                             const items = res.data.data.items || res.data.data;
                             tableData.value = Array.isArray(items) ? items : [];
-                            if (res.data.data.total !== undefined) {
+                            // 使用后端返回的pages（总页数），否则自己计算
+                            if (res.data.data.pages !== undefined) {
+                                totalPages.value = res.data.data.pages || 1;
+                            } else if (res.data.data.total !== undefined) {
                                 totalPages.value = Math.ceil(res.data.data.total / 20) || 1;
                             }
                         }
@@ -2464,6 +2469,7 @@
                     getCustomAction, customAction,
                     openImportDialog, onImportFileChange, handleFileDrop,
                     downloadImportTemplate, submitImport, resetImportDialog,
+                    exportData,
                     getStatusColor, getStatusLabel, formatDate,
                     currentLang, switchLang,
                     isDarkMode, toggleDarkMode, sidebarCollapsed, toggleSidebar,
