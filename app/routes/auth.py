@@ -54,8 +54,11 @@ def _send_email(to_email, subject, body):
         msg['Subject'] = subject
         msg['From'] = Config.SMTP_FROM
         msg['To'] = to_email
-        server = smtplib.SMTP(Config.SMTP_HOST, Config.SMTP_PORT, timeout=10)
-        server.starttls()
+        if Config.SMTP_USE_SSL:
+            server = smtplib.SMTP_SSL(Config.SMTP_HOST, Config.SMTP_PORT, timeout=10)
+        else:
+            server = smtplib.SMTP(Config.SMTP_HOST, Config.SMTP_PORT, timeout=10)
+            server.starttls()
         server.login(Config.SMTP_USER, Config.SMTP_PASSWORD)
         server.sendmail(Config.SMTP_FROM, [to_email], msg.as_string())
         server.quit()

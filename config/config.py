@@ -52,12 +52,13 @@ class Config:
     LOGIN_FAIL_LIMIT = 5  # 5次失败后需要验证码
     LOGIN_LOCK_MINUTES = 30  # 锁定30分钟
 
-    # 邮件配置
-    SMTP_HOST = os.environ.get('SMTP_HOST') or 'smtp.qq.com'
-    SMTP_PORT = int(os.environ.get('SMTP_PORT') or 587)
-    SMTP_USER = os.environ.get('SMTP_USER') or ''
-    SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD') or ''
-    SMTP_FROM = os.environ.get('SMTP_FROM') or 'noreply@logistics.com'
+    # 邮件配置（163邮箱）
+    SMTP_HOST = os.environ.get('SMTP_HOST') or 'smtp.163.com'
+    SMTP_PORT = int(os.environ.get('SMTP_PORT') or 465)
+    SMTP_USE_SSL = os.environ.get('SMTP_USE_SSL', 'true').lower() == 'true'
+    SMTP_USER = os.environ.get('SMTP_USER') or 'zst_9609_4557@163.com'
+    SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD') or 'QAUtC3BiuSgFacNq'
+    SMTP_FROM = os.environ.get('SMTP_FROM') or 'zst_9609_4557@163.com'
 
     # 备份
     BACKUP_DIR = os.path.join(BASE_DIR, 'backup')
