@@ -248,6 +248,7 @@ def login():
     code_id = data.get('code_id', '')
     captcha_code = data.get('captcha_code', '')
     remember = data.get('remember', False)
+    role_type = data.get('role_type', 'admin')
 
     if not username or not password:
         return jsonify({'code': 400, 'message': '请输入用户名和密码'})
@@ -286,6 +287,13 @@ def login():
 
     if user.status == 0:
         return jsonify({'code': 403, 'message': '账号已被禁用'})
+
+    # 角色验证：管理员登录只能管理员角色，普通用户登录排除管理员
+    is_admin_role = user.role and user.role.code in ('super_admin', 'admin')
+    if role_type == 'admin' and not is_admin_role:
+        return jsonify({'code': 403, 'message': '该账号不是管理员，请选择普通用户登录'})
+    if role_type == 'user' and is_admin_role:
+        return jsonify({'code': 403, 'message': '管理员请选择管理员登录入口'})
 
     # 登录成功，重置失败计数
     reset_login_fail(ip)

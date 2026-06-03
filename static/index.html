@@ -745,6 +745,15 @@
 
                 <!-- 登录表单 -->
                 <form @submit.prevent="handleLogin" v-if="loginTab==='login'">
+                    <!-- 角色切换 -->
+                    <div class="d-flex mb-3 p-1 rounded-3" style="background:#f1f5f9;">
+                        <button type="button" class="btn btn-sm flex-fill border-0 rounded-3" @click="loginForm.roleType='admin'" :class="loginForm.roleType==='admin'?'btn-primary text-white':'text-muted'">
+                            <i class="fas fa-user-shield me-1"></i>{{ I18n.t('login.adminLogin') }}
+                        </button>
+                        <button type="button" class="btn btn-sm flex-fill border-0 rounded-3" @click="loginForm.roleType='user'" :class="loginForm.roleType==='user'?'btn-success text-white':'text-muted'">
+                            <i class="fas fa-user me-1"></i>{{ I18n.t('login.userLogin') }}
+                        </button>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">{{ I18n.t('login.username') }}</label>
                         <input type="text" class="form-control form-control-lg" v-model="loginForm.username" :placeholder="I18n.t('login.username.placeholder')" required>
@@ -763,9 +772,9 @@
                     <div class="alert alert-danger" v-if="loginError">
                         <i class="fas fa-exclamation-circle me-1"></i> {{ loginError }}
                     </div>
-                    <button type="submit" class="btn btn-primary btn-lg w-100" :disabled="loginLoading">
+                    <button type="submit" class="btn btn-lg w-100 text-white" :disabled="loginLoading" :class="loginForm.roleType==='admin'?'btn-primary':'btn-success'">
                         <span v-if="loginLoading" class="spinner-border spinner-border-sm me-2"></span>
-                        <span v-else><i class="fas fa-sign-in-alt me-2"></i>{{ I18n.t('login.btn') }}</span>
+                        <span v-else><i class="fas fa-sign-in-alt me-2"></i>{{ loginForm.roleType==='admin' ? I18n.t('login.adminBtn') : I18n.t('login.userBtn') }}</span>
                     </button>
                 </form>
 
@@ -1475,7 +1484,8 @@
                 const loginForm = reactive({
                     username: '',
                     password: '',
-                    remember: false
+                    remember: false,
+                    roleType: 'admin'
                 });
 
                 // ===== 页面配置 =====
@@ -1986,7 +1996,8 @@
                         const payload = {
                             username: loginForm.username,
                             password: loginForm.password,
-                            remember: loginForm.remember
+                            remember: loginForm.remember,
+                            role_type: loginForm.roleType
                         };
                         if (needCaptcha.value) {
                             payload.code_id = captchaCodeId.value;

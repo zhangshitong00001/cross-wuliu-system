@@ -51,6 +51,10 @@ var I18n = {
             'login.reset.newPassword.placeholder': '请输入新密码',
             'login.register.success': '注册成功，请登录',
             'login.reset.success': '密码重置成功，请使用新密码登录',
+            'login.adminLogin': '管理员登录',
+            'login.userLogin': '普通用户登录',
+            'login.adminBtn': '管理员登录',
+            'login.userBtn': '用户登录',
 
             // ===== 顶部栏 =====
             'topbar.logout': '退出登录',
@@ -469,6 +473,10 @@ var I18n = {
             'login.reset.newPassword.placeholder': 'Enter new password',
             'login.register.success': 'Registered! Please login.',
             'login.reset.success': 'Password reset! Please login with new password.',
+            'login.adminLogin': 'Admin Login',
+            'login.userLogin': 'User Login',
+            'login.adminBtn': 'Admin Login',
+            'login.userBtn': 'User Login',
 
             // ===== Top Bar =====
             'topbar.logout': 'Logout',
