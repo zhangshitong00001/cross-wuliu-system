@@ -745,6 +745,11 @@
 
                 <!-- 登录表单 -->
                 <form @submit.prevent="handleLogin" v-if="loginTab==='login'">
+                    <div class="text-end mb-2">
+                        <a href="#" @click.prevent="loginForm.roleType=loginForm.roleType==='admin'?'user':'admin'" style="font-size:13px;text-decoration:none;color:#94a3b8;">
+                            {{ loginForm.roleType==='admin' ? '返回普通用户登录' : '管理员登录' }}
+                        </a>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">{{ I18n.t('login.username') }}</label>
                         <input type="text" class="form-control form-control-lg" v-model="loginForm.username" :placeholder="I18n.t('login.username.placeholder')" required>
@@ -759,10 +764,6 @@
                             <input type="text" class="form-control form-control-lg" v-model="captchaCode" :placeholder="I18n.t('login.captcha.placeholder')" maxlength="4" style="flex:1;" required>
                             <img :src="captchaImage" @click="loadCaptcha" style="cursor:pointer;border-radius:8px;height:44px;" :title="I18n.t('login.captcha.refresh')">
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <a href="#" @click.prevent="loginForm.roleType='admin'" class="me-3" :style="{fontWeight:loginForm.roleType==='admin'?'bold':'normal',color:loginForm.roleType==='admin'?'var(--bs-primary)':'#94a3b8'}">🛡 {{ I18n.t('login.adminLogin') }}</a>
-                        <a href="#" @click.prevent="loginForm.roleType='user'" :style="{fontWeight:loginForm.roleType==='user'?'bold':'normal',color:loginForm.roleType==='user'?'var(--bs-primary)':'#94a3b8'}">👤 {{ I18n.t('login.userLogin') }}</a>
                     </div>
                     <div class="alert alert-danger" v-if="loginError">
                         <i class="fas fa-exclamation-circle me-1"></i> {{ loginError }}
@@ -1480,7 +1481,7 @@
                     username: '',
                     password: '',
                     remember: false,
-                    roleType: 'admin'
+                    roleType: 'user'
                 });
 
                 // ===== 页面配置 =====
