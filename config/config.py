@@ -52,13 +52,24 @@ class Config:
     LOGIN_FAIL_LIMIT = 5  # 5次失败后需要验证码
     LOGIN_LOCK_MINUTES = 30  # 锁定30分钟
 
-    # 邮件配置（163邮箱）
-    SMTP_HOST = os.environ.get('SMTP_HOST') or 'smtp.163.com'
-    SMTP_PORT = int(os.environ.get('SMTP_PORT') or 465)
-    SMTP_USE_SSL = os.environ.get('SMTP_USE_SSL', 'true').lower() == 'true'
-    SMTP_USER = os.environ.get('SMTP_USER') or 'zst_9609_4557@163.com'
-    SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD') or 'NVcMequn85xiA7BA'
-    SMTP_FROM = os.environ.get('SMTP_FROM') or 'zst_9609_4557@163.com'
+    # 邮件配置
+    # 优先级：环境变量 > 全局配置 /root/.hermes/smtp_config.json > 默认值
+    _SMTP_CFG = {}
+    try:
+        import json
+        _cfg_path = os.path.join(os.path.expanduser('~'), '.hermes', 'smtp_config.json')
+        if os.path.exists(_cfg_path):
+            with open(_cfg_path) as _f:
+                _SMTP_CFG = json.load(_f)
+    except Exception:
+        pass
+
+    SMTP_HOST = os.environ.get('SMTP_HOST') or _SMTP_CFG.get('smtp_server') or 'smtp.163.com'
+    SMTP_PORT = int(os.environ.get('SMTP_PORT') or _SMTP_CFG.get('smtp_port') or 465)
+    SMTP_USE_SSL = os.environ.get('SMTP_USE_SSL', str(SMTP_PORT == 465)).lower() == 'true'
+    SMTP_USER = os.environ.get('SMTP_USER') or _SMTP_CFG.get('smtp_user') or ''
+    SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD') or _SMTP_CFG.get('smtp_pass') or ''
+    SMTP_FROM = os.environ.get('SMTP_FROM') or _SMTP_CFG.get('mail_from') or ''
 
     # 备份
     BACKUP_DIR = os.path.join(BASE_DIR, 'backup')
