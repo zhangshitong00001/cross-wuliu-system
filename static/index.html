@@ -858,82 +858,82 @@
                     </a>
 
                     <div class="menu-section-label">{{ I18n.t('menu.warehouse') }}</div>
-                    <div class="menu-item" @click="toggleSubmenu('warehouse')">
+                    <div class="menu-item" v-if="canAccess('warehouse-receipt') || canAccess('warehouse-inventory') || canAccess('warehouse-batch')" @click="toggleSubmenu('warehouse')">
                         <i class="fas fa-warehouse"></i> {{ I18n.t('menu.warehouse.title') }}
                         <i class="fas fa-chevron-down ms-auto" style="font-size: 11px; opacity:0.5;"></i>
                     </div>
                     <div class="menu-sub" :class="{show: openSubmenus.warehouse}">
-                        <a class="menu-item" :class="{active: currentPage === 'warehouse-receipt'}" @click="navigate('warehouse-receipt')">{{ I18n.t('menu.warehouse.receipt') }}</a>
-                        <a class="menu-item" :class="{active: currentPage === 'warehouse-inventory'}" @click="navigate('warehouse-inventory')">{{ I18n.t('menu.warehouse.inventory') }}</a>
-                        <a class="menu-item" :class="{active: currentPage === 'warehouse-batch'}" @click="navigate('warehouse-batch')">{{ I18n.t('menu.warehouse.batch') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'warehouse-receipt'}" v-if="canAccess('warehouse-receipt')" @click="navigate('warehouse-receipt')">{{ I18n.t('menu.warehouse.receipt') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'warehouse-inventory'}" v-if="canAccess('warehouse-inventory')" @click="navigate('warehouse-inventory')">{{ I18n.t('menu.warehouse.inventory') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'warehouse-batch'}" v-if="canAccess('warehouse-batch')" @click="navigate('warehouse-batch')">{{ I18n.t('menu.warehouse.batch') }}</a>
                     </div>
 
-                    <div class="menu-item" @click="toggleSubmenu('sorting')">
+                    <div class="menu-item" v-if="canAccess('sorting-points') || canAccess('sorting-tasks')" @click="toggleSubmenu('sorting')">
                         <i class="fas fa-sort-amount-up"></i> {{ I18n.t('menu.sorting.title') }}
                         <i class="fas fa-chevron-down ms-auto" style="font-size: 11px; opacity:0.5;"></i>
                     </div>
                     <div class="menu-sub" :class="{show: openSubmenus.sorting}">
-                        <a class="menu-item" :class="{active: currentPage === 'sorting-points'}" @click="navigate('sorting-points')">{{ I18n.t('menu.sorting.points') }}</a>
-                        <a class="menu-item" :class="{active: currentPage === 'sorting-tasks'}" @click="navigate('sorting-tasks')">{{ I18n.t('menu.sorting.tasks') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'sorting-points'}" v-if="canAccess('sorting-points')" @click="navigate('sorting-points')">{{ I18n.t('menu.sorting.points') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'sorting-tasks'}" v-if="canAccess('sorting-tasks')" @click="navigate('sorting-tasks')">{{ I18n.t('menu.sorting.tasks') }}</a>
                     </div>
 
-                    <a class="menu-item" :class="{active: currentPage === 'documents'}" @click="navigate('documents')">
+                    <a class="menu-item" :class="{active: currentPage === 'documents'}" v-if="canAccess('documents')" @click="navigate('documents')">
                         <i class="fas fa-file-alt"></i> {{ I18n.t('menu.documents') }}
                     </a>
 
                     <div class="menu-section-label">{{ I18n.t('menu.transport') }}</div>
-                    <div class="menu-item" @click="toggleSubmenu('transport')">
+                    <div class="menu-item" v-if="canAccess('transport-tasks') || canAccess('transport-vehicles') || canAccess('transport-drivers')" @click="toggleSubmenu('transport')">
                         <i class="fas fa-truck"></i> {{ I18n.t('menu.transport.title') }}
                         <i class="fas fa-chevron-down ms-auto" style="font-size: 11px; opacity:0.5;"></i>
                     </div>
                     <div class="menu-sub" :class="{show: openSubmenus.transport}">
-                        <a class="menu-item" :class="{active: currentPage === 'transport-tasks'}" @click="navigate('transport-tasks')">{{ I18n.t('menu.transport.tasks') }}</a>
-                        <a class="menu-item" :class="{active: currentPage === 'transport-vehicles'}" @click="navigate('transport-vehicles')">{{ I18n.t('menu.transport.vehicles') }}</a>
-                        <a class="menu-item" :class="{active: currentPage === 'transport-drivers'}" @click="navigate('transport-drivers')">{{ I18n.t('menu.transport.drivers') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'transport-tasks'}" v-if="canAccess('transport-tasks')" @click="navigate('transport-tasks')">{{ I18n.t('menu.transport.tasks') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'transport-vehicles'}" v-if="canAccess('transport-vehicles')" @click="navigate('transport-vehicles')">{{ I18n.t('menu.transport.vehicles') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'transport-drivers'}" v-if="canAccess('transport-drivers')" @click="navigate('transport-drivers')">{{ I18n.t('menu.transport.drivers') }}</a>
                     </div>
 
-                    <a class="menu-item" :class="{active: currentPage === 'customs'}" @click="navigate('customs')">
+                    <a class="menu-item" :class="{active: currentPage === 'customs'}" v-if="canAccess('customs')" @click="navigate('customs')">
                         <i class="fas fa-passport"></i> {{ I18n.t('menu.customs') }}
                     </a>
-                    <a class="menu-item" :class="{active: currentPage === 'clearance'}" @click="navigate('clearance')">
+                    <a class="menu-item" :class="{active: currentPage === 'clearance'}" v-if="canAccess('clearance')" @click="navigate('clearance')">
                         <i class="fas fa-clipboard-check"></i> {{ I18n.t('menu.clearance') }}
                     </a>
-                    <a class="menu-item" :class="{active: currentPage === 'port-transport'}" @click="navigate('port-transport')">
+                    <a class="menu-item" :class="{active: currentPage === 'port-transport'}" v-if="canAccess('port-transport')" @click="navigate('port-transport')">
                         <i class="fas fa-road"></i> {{ I18n.t('menu.portTransport') }}
                     </a>
-                    <a class="menu-item" :class="{active: currentPage === 'distribution'}" @click="navigate('distribution')">
+                    <a class="menu-item" :class="{active: currentPage === 'distribution'}" v-if="canAccess('distribution')" @click="navigate('distribution')">
                         <i class="fas fa-truck-fast"></i> {{ I18n.t('menu.distribution') }}
                     </a>
-                    <a class="menu-item" :class="{active: currentPage === 'sign'}" @click="navigate('sign')">
+                    <a class="menu-item" :class="{active: currentPage === 'sign'}" v-if="canAccess('sign')" @click="navigate('sign')">
                         <i class="fas fa-signature"></i> {{ I18n.t('menu.sign') }}
                     </a>
 
                     <div class="menu-section-label">{{ I18n.t('menu.finance') }}</div>
-                    <div class="menu-item" @click="toggleSubmenu('finance')">
+                    <div class="menu-item" v-if="canAccess('reconciliation') || canAccess('settlement') || canAccess('payment')" @click="toggleSubmenu('finance')">
                         <i class="fas fa-coins"></i> {{ I18n.t('menu.finance.title') }}
                         <i class="fas fa-chevron-down ms-auto" style="font-size: 11px; opacity:0.5;"></i>
                     </div>
                     <div class="menu-sub" :class="{show: openSubmenus.finance}">
-                        <a class="menu-item" :class="{active: currentPage === 'reconciliation'}" @click="navigate('reconciliation')">{{ I18n.t('menu.finance.reconciliation') }}</a>
-                        <a class="menu-item" :class="{active: currentPage === 'settlement'}" @click="navigate('settlement')">{{ I18n.t('menu.finance.settlement') }}</a>
-                        <a class="menu-item" :class="{active: currentPage === 'payment'}" @click="navigate('payment')">{{ I18n.t('menu.finance.payment') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'reconciliation'}" v-if="canAccess('reconciliation')" @click="navigate('reconciliation')">{{ I18n.t('menu.finance.reconciliation') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'settlement'}" v-if="canAccess('settlement')" @click="navigate('settlement')">{{ I18n.t('menu.finance.settlement') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'payment'}" v-if="canAccess('payment')" @click="navigate('payment')">{{ I18n.t('menu.finance.payment') }}</a>
                     </div>
 
                     <div class="menu-section-label">{{ I18n.t('menu.system') }}</div>
-                    <a class="menu-item" :class="{active: currentPage === 'tracking'}" @click="navigate('tracking')">
+                    <a class="menu-item" :class="{active: currentPage === 'tracking'}" v-if="canAccess('tracking')" @click="navigate('tracking')">
                         <i class="fas fa-search-location"></i> {{ I18n.t('menu.tracking') }}
                     </a>
-                    <a class="menu-item" :class="{active: currentPage === 'alerts'}" @click="navigate('alerts')">
+                    <a class="menu-item" :class="{active: currentPage === 'alerts'}" v-if="canAccess('alerts')" @click="navigate('alerts')">
                         <i class="fas fa-bell"></i> {{ I18n.t('menu.alerts') }}
                         <span class="menu-badge" v-if="alertCount > 0">{{ alertCount }}</span>
                     </a>
-                    <a class="menu-item" :class="{active: currentPage === 'charging'}" @click="navigate('charging')">
+                    <a class="menu-item" :class="{active: currentPage === 'charging'}" v-if="canAccess('charging')" @click="navigate('charging')">
                         <i class="fas fa-calculator"></i> {{ I18n.t('menu.charging') }}
                     </a>
-                    <a class="menu-item" :class="{active: currentPage === 'users'}" @click="navigate('users')">
+                    <a class="menu-item" :class="{active: currentPage === 'users'}" v-if="canAccess('users')" @click="navigate('users')">
                         <i class="fas fa-users-cog"></i> {{ I18n.t('menu.users') }}
                     </a>
-                    <a class="menu-item" :class="{active: currentPage === 'logs'}" @click="navigate('logs')">
+                    <a class="menu-item" :class="{active: currentPage === 'logs'}" v-if="canAccess('logs')" @click="navigate('logs')">
                         <i class="fas fa-history"></i> {{ I18n.t('menu.logs') }}
                     </a>
                     <!-- 侧边栏底部折叠按钮 -->
@@ -966,7 +966,7 @@
                         <button class="btn btn-outline-secondary btn-sm" @click="switchLang" :title="I18n.t('topbar.switchLang')" style="border-radius:20px;">
                             <i class="fas fa-language me-1"></i>{{ currentLang === 'zh' ? 'EN' : '中' }}
                         </button>
-                        <div class="user-info" @click="navigate('users')">
+                        <div class="user-info" v-if="canAccess('users')" @click="navigate('users')">
                             <div class="user-avatar">{{ (currentUser.real_name || currentUser.username).charAt(0) }}</div>
                             <div>
                                 <div class="user-name">{{ currentUser.real_name || currentUser.username }}</div>
@@ -1025,16 +1025,16 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="d-grid gap-3">
-                                        <button class="quick-action-btn text-start" @click="navigate('warehouse-receipt')">
+                                        <button class="quick-action-btn text-start" v-if="canAccess('warehouse-receipt')" @click="navigate('warehouse-receipt')">
                                             <i class="fas fa-plus-circle me-2" style="color: var(--primary);"></i> {{ I18n.t('dashboard.quick.newReceipt') }}
                                         </button>
-                                        <button class="quick-action-btn text-start" @click="navigate('transport-tasks')">
+                                        <button class="quick-action-btn text-start" v-if="canAccess('transport-tasks')" @click="navigate('transport-tasks')">
                                             <i class="fas fa-truck me-2" style="color: var(--success);"></i> {{ I18n.t('dashboard.quick.newTransport') }}
                                         </button>
-                                        <button class="quick-action-btn text-start" @click="navigate('documents')">
+                                        <button class="quick-action-btn text-start" v-if="canAccess('documents')" @click="navigate('documents')">
                                             <i class="fas fa-file-export me-2" style="color: var(--secondary);"></i> {{ I18n.t('dashboard.quick.genDoc') }}
                                         </button>
-                                        <button class="quick-action-btn text-start" @click="navigate('sorting-points')">
+                                        <button class="quick-action-btn text-start" v-if="canAccess('sorting-points')" @click="navigate('sorting-points')">
                                             <i class="fas fa-map-marker-alt me-2" style="color: var(--danger);"></i> {{ I18n.t('dashboard.quick.managePoints') }}
                                         </button>
                                     </div>
@@ -1442,6 +1442,7 @@
                 window.__isLoggedIn = isLoggedIn;
                 watch(isLoggedIn, (v) => console.log('[DEBUG] isLoggedIn:', v));
                 const currentUser = ref({});
+                const userPermissions = ref([]);
                 const currentPage = ref('dashboard');
                 const pageTitle = ref(I18n.t('dashboard.title'));
                 const loginLoading = ref(false);
@@ -2003,6 +2004,7 @@
                         if (res.data.code === 200) {
                             const d = res.data.data;
                             currentUser.value = d;
+                            userPermissions.value = d.permissions || [];
                             localStorage.setItem('auth_token', d.token);
                             needCaptcha.value = false;
                             isLoggedIn.value = true;
@@ -2134,6 +2136,41 @@
                     } catch (err) {
                         loginError.value = err.response?.data?.message || '重置失败';
                     } finally { loginLoading.value = false; }
+                }
+
+                // ===== 权限控制 =====
+                const pagePermissionMap = {
+                    'warehouse-receipt': 'warehouse_receipt_view',
+                    'warehouse-inventory': 'warehouse_inventory_view',
+                    'warehouse-batch': 'warehouse_batch_view',
+                    'sorting-points': 'sorting_point_view',
+                    'sorting-tasks': 'sorting_task_view',
+                    'documents': 'document_view',
+                    'transport-tasks': 'transport_task_view',
+                    'transport-vehicles': 'transport_vehicle_view',
+                    'transport-drivers': 'transport_driver_view',
+                    'customs': 'customs_view',
+                    'clearance': 'clearance_view',
+                    'port-transport': 'distribution_task_view',
+                    'distribution': 'distribution_task_view',
+                    'sign': 'sign_view',
+                    'reconciliation': 'reconciliation_view',
+                    'settlement': 'settlement_view',
+                    'payment': 'payment_view',
+                    'tracking': 'tracking_view',
+                    'alerts': 'alert_view',
+                    'charging': 'charging_manage',
+                    'users': 'user_view',
+                    'logs': 'log_view',
+                };
+
+                function canAccess(page) {
+                    if (page === 'dashboard') return true;
+                    const perm = pagePermissionMap[page];
+                    if (!perm) return true;
+                    // super_admin sees everything
+                    if (currentUser.value.role_code === 'super_admin') return true;
+                    return userPermissions.value.includes(perm);
                 }
 
                 // ===== 导航 =====
@@ -2649,6 +2686,7 @@
                         const res = await axiosInstance.get('/api/auth/check');
                         if (res.data.code === 200 && res.data.logged_in) {
                             currentUser.value = res.data.data;
+                            userPermissions.value = res.data.data.permissions || [];
                             isLoggedIn.value = true;
                             setTimeout(() => {
                                 loadDashboard();
@@ -2666,7 +2704,8 @@
                 checkLogin();
 
                 return {
-                    isLoggedIn, currentUser, currentPage, pageTitle,
+                    isLoggedIn, currentUser, userPermissions, currentPage, pageTitle,
+                    canAccess,
                     loginForm, loginLoading, loginError, loginSuccess,
                     loginTab, regForm, forgotForm, regCodeSent, regCodeCountdown, forgotCodeCountdown,
                     sendRegCode, handleRegister, sendForgotCode, handleResetPassword,
