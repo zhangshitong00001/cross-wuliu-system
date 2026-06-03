@@ -6,6 +6,10 @@ from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from app.models import PaymentRecord, InvoiceRecord, OperationLog
 from app import db
+from app.utils.excel_import import (
+    ExcelImporter, FieldValidator, build_import_response,
+    allowed_file, get_import_template, safe_str, safe_float, safe_int
+)
 
 payment_bp = Blueprint('payment', __name__)
 
@@ -65,6 +69,29 @@ def update_payment_status(payment_id):
         payment.paid_at = datetime.now()
     db.session.commit()
     return jsonify({'code': 200, 'message': '状态已更新'})
+
+
+@payment_bp.route('/records/<int:payment_id>', methods=['PUT'])
+@login_required
+def update_payment(payment_id):
+    """更新支付记录"""
+    payment = PaymentRecord.query.get_or_404(payment_id)
+    data = request.get_json()
+    for field in ['payment_no', 'settlement_id', 'amount', 'payment_method', 'status']:
+        if field in data:
+            setattr(payment, field, data[field])
+    db.session.commit()
+    return jsonify({'code': 200, 'message': '支付记录更新成功', 'data': payment.to_dict()})
+
+
+@payment_bp.route('/records/<int:payment_id>', methods=['DELETE'])
+@login_required
+def delete_payment(payment_id):
+    """删除支付记录"""
+    payment = PaymentRecord.query.get_or_404(payment_id)
+    payment.is_deleted = 1
+    db.session.commit()
+    return jsonify({'code': 200, 'message': '删除成功'})
 
 
 # ===== 发票管理 =====
@@ -132,3 +159,143 @@ def red_flush_invoice(invoice_id):
     invoice.invoice_status = 'red_flush'
     db.session.commit()
     return jsonify({'code': 200, 'message': '发票已红冲'})
+
+
+# ===== Excel批量导入 =====
+
+@payment_bp.route('/records/import/template', methods=['GET'])
+@login_required
+def download_payment_template():
+    """下载支付记录导入模板"""
+    fields = [
+        {'name': 'payment_no', 'display_name': '支付编号', 'required': True, 'example': 'PAY20260601001'},
+        {'name': 'settlement_id', 'display_name': '结算单ID', 'example': '1'},
+        {'name': 'amount', 'display_name': '金额', 'required': True, 'example': '50000.00'},
+        {'name': 'payment_method', 'display_name': '支付方式', 'example': 'bank'},
+        {'name': 'remark', 'display_name': '备注', 'example': ''},
+    ]
+    output = get_import_template(fields, sheet_name='支付记录导入')
+    from flask import send_file
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name='支付记录导入模板.xlsx'
+    )
+
+
+@payment_bp.route('/records/import', methods=['POST'])
+@login_required
+def import_payments():
+    """批量导入支付记录"""
+    if 'file' not in request.files:
+        return jsonify({'code': 400, 'message': '请上传文件'})
+
+    file = request.files['file']
+    if file.filename == '' or not allowed_file(file.filename):
+        return jsonify({'code': 400, 'message': '请上传有效的Excel文件（.xlsx或.xls）'})
+
+    validators = [
+        FieldValidator('payment_no', '支付编号', required=True,
+                       unique_check=lambda v: PaymentRecord.query.filter_by(payment_no=v, is_deleted=0).first() is not None),
+        FieldValidator('settlement_id', '结算单ID', field_type='int'),
+        FieldValidator('amount', '金额', required=True, field_type='float', min_value=0),
+        FieldValidator('payment_method', '支付方式'),
+        FieldValidator('remark', '备注'),
+    ]
+
+    def process_func(row, row_index):
+        payment = PaymentRecord(
+            payment_no=safe_str(row.get('payment_no')),
+            settlement_id=safe_int(row.get('settlement_id')),
+            amount=safe_float(row.get('amount'), 0),
+            payment_method=safe_str(row.get('payment_method')) or 'bank',
+            remark=safe_str(row.get('remark')),
+            status='pending'
+        )
+        payment.save()
+        return True, None
+
+    importer = ExcelImporter(file, validators=validators)
+    result = importer.run(process_func)
+
+    OperationLog(
+        user_id=current_user.id, username=current_user.username,
+        action='import', module='payment',
+        target_desc=f'批量导入支付记录: 成功{result["success"]}条, 失败{result["fail"]}条',
+        ip_address=request.remote_addr
+    ).save()
+
+    return jsonify(build_import_response(result))
+
+
+@payment_bp.route('/invoices/import/template', methods=['GET'])
+@login_required
+def download_invoice_template():
+    """下载发票导入模板"""
+    fields = [
+        {'name': 'invoice_no', 'display_name': '发票编号', 'required': True, 'example': 'INV20260601001'},
+        {'name': 'settlement_id', 'display_name': '结算单ID', 'example': '1'},
+        {'name': 'invoice_type', 'display_name': '发票类型', 'example': 'special'},
+        {'name': 'amount', 'display_name': '金额', 'required': True, 'example': '50000.00'},
+        {'name': 'buyer_info', 'display_name': '购买方信息', 'example': 'XX公司'},
+        {'name': 'seller_info', 'display_name': '销售方信息', 'example': 'YY公司'},
+        {'name': 'remark', 'display_name': '备注', 'example': ''},
+    ]
+    output = get_import_template(fields, sheet_name='发票导入')
+    from flask import send_file
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name='发票导入模板.xlsx'
+    )
+
+
+@payment_bp.route('/invoices/import', methods=['POST'])
+@login_required
+def import_invoices():
+    """批量导入发票"""
+    if 'file' not in request.files:
+        return jsonify({'code': 400, 'message': '请上传文件'})
+
+    file = request.files['file']
+    if file.filename == '' or not allowed_file(file.filename):
+        return jsonify({'code': 400, 'message': '请上传有效的Excel文件（.xlsx或.xls）'})
+
+    validators = [
+        FieldValidator('invoice_no', '发票编号', required=True,
+                       unique_check=lambda v: InvoiceRecord.query.filter_by(invoice_no=v, is_deleted=0).first() is not None),
+        FieldValidator('settlement_id', '结算单ID', field_type='int'),
+        FieldValidator('invoice_type', '发票类型'),
+        FieldValidator('amount', '金额', required=True, field_type='float', min_value=0),
+        FieldValidator('buyer_info', '购买方信息'),
+        FieldValidator('seller_info', '销售方信息'),
+        FieldValidator('remark', '备注'),
+    ]
+
+    def process_func(row, row_index):
+        invoice = InvoiceRecord(
+            invoice_no=safe_str(row.get('invoice_no')),
+            settlement_id=safe_int(row.get('settlement_id')),
+            invoice_type=safe_str(row.get('invoice_type')) or 'special',
+            amount=safe_float(row.get('amount'), 0),
+            buyer_info=safe_str(row.get('buyer_info')),
+            seller_info=safe_str(row.get('seller_info')),
+            remark=safe_str(row.get('remark')),
+            invoice_status='pending'
+        )
+        invoice.save()
+        return True, None
+
+    importer = ExcelImporter(file, validators=validators)
+    result = importer.run(process_func)
+
+    OperationLog(
+        user_id=current_user.id, username=current_user.username,
+        action='import', module='invoice',
+        target_desc=f'批量导入发票: 成功{result["success"]}条, 失败{result["fail"]}条',
+        ip_address=request.remote_addr
+    ).save()
+
+    return jsonify(build_import_response(result))

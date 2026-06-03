@@ -1,6 +1,7 @@
 """
 云仓集货管理 - 收货、库存、批次模型
 """
+from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Float, ForeignKey, Text, Date, DECIMAL
 from app.models.base import BaseModel, db
 
@@ -64,5 +65,5 @@ class WarehouseRecord(BaseModel, db.Model):
     quantity_change = Column(Integer, comment='变动数量')
     quantity_after = Column(Integer, comment='变动后数量')
     operator_id = Column(Integer, ForeignKey('users.id'), comment='操作人')
-    operation_time = Column(DateTime, comment='操作时间')
+    operation_time = Column(DateTime, default=datetime.now, comment='操作时间')
     remark = Column(Text, comment='备注')

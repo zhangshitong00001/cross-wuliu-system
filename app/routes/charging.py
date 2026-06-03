@@ -4,8 +4,12 @@
 from datetime import datetime
 from flask import Blueprint, request, jsonify
 from flask_login import login_required
-from app.models import ChargingRule
+from app.models import ChargingRule, OperationLog
 from app import db
+from app.utils.excel_import import (
+    ExcelImporter, FieldValidator, build_import_response,
+    allowed_file, get_import_template, safe_str, safe_int
+)
 
 charging_bp = Blueprint('charging', __name__)
 
@@ -90,6 +94,16 @@ def toggle_rule(rule_id):
     return jsonify({'code': 200, 'message': f'规则已{"启用" if rule.status == "active" else "停用"}'})
 
 
+@charging_bp.route('/rules/<int:rule_id>', methods=['DELETE'])
+@login_required
+def delete_rule(rule_id):
+    """删除计费规则"""
+    rule = ChargingRule.query.get_or_404(rule_id)
+    rule.is_deleted = 1
+    db.session.commit()
+    return jsonify({'code': 200, 'message': '规则删除成功'})
+
+
 @charging_bp.route('/calculate', methods=['POST'])
 @login_required
 def calculate_fee():
@@ -138,7 +152,7 @@ def calculate_fee():
             'fee': round(fee, 2)
         })
         total += fee
-    
+
     return jsonify({
         'code': 200,
         'data': {
@@ -146,3 +160,79 @@ def calculate_fee():
             'total': round(total, 2)
         }
     })
+
+
+# ===== Excel批量导入 =====
+
+@charging_bp.route('/rules/import/template', methods=['GET'])
+@login_required
+def download_rule_template():
+    """下载计费规则导入模板"""
+    fields = [
+        {'name': 'rule_name', 'display_name': '规则名称', 'required': True, 'example': '仓储费-标准'},
+        {'name': 'rule_type', 'display_name': '费用类型', 'example': 'storage'},
+        {'name': 'calc_method', 'display_name': '计算方式', 'example': 'by_weight'},
+        {'name': 'priority', 'display_name': '优先级', 'example': '10'},
+        {'name': 'rule_config', 'display_name': '规则配置(JSON)', 'example': '{"unit_price": 2.5}'},
+        {'name': 'effective_date', 'display_name': '生效日期', 'example': '2026-06-01'},
+        {'name': 'expire_date', 'display_name': '失效日期', 'example': '2027-06-01'},
+        {'name': 'remark', 'display_name': '备注', 'example': ''},
+    ]
+    output = get_import_template(fields, sheet_name='计费规则导入')
+    from flask import send_file
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name='计费规则导入模板.xlsx'
+    )
+
+
+@charging_bp.route('/rules/import', methods=['POST'])
+@login_required
+def import_rules():
+    """批量导入计费规则"""
+    if 'file' not in request.files:
+        return jsonify({'code': 400, 'message': '请上传文件'})
+
+    file = request.files['file']
+    if file.filename == '' or not allowed_file(file.filename):
+        return jsonify({'code': 400, 'message': '请上传有效的Excel文件（.xlsx或.xls）'})
+
+    validators = [
+        FieldValidator('rule_name', '规则名称', required=True),
+        FieldValidator('rule_type', '费用类型'),
+        FieldValidator('calc_method', '计算方式'),
+        FieldValidator('priority', '优先级', field_type='int', min_value=0),
+        FieldValidator('rule_config', '规则配置(JSON)'),
+        FieldValidator('effective_date', '生效日期', field_type='date'),
+        FieldValidator('expire_date', '失效日期', field_type='date'),
+        FieldValidator('remark', '备注'),
+    ]
+
+    def process_func(row, row_index):
+        rule = ChargingRule(
+            rule_name=safe_str(row.get('rule_name')),
+            rule_type=safe_str(row.get('rule_type')),
+            calc_method=safe_str(row.get('calc_method')),
+            priority=safe_int(row.get('priority'), 0),
+            rule_config=safe_str(row.get('rule_config')),
+            effective_date=safe_str(row.get('effective_date')),
+            expire_date=safe_str(row.get('expire_date')),
+            remark=safe_str(row.get('remark')),
+            status='active'
+        )
+        rule.save()
+        return True, None
+
+    importer = ExcelImporter(file, validators=validators)
+    result = importer.run(process_func)
+
+    OperationLog(
+        user_id=current_user.id, username=current_user.username,
+        action='import', module='charging_rule',
+        target_desc=f'批量导入计费规则: 成功{result["success"]}条, 失败{result["fail"]}条',
+        ip_address=request.remote_addr
+    ).save()
+
+    return jsonify(build_import_response(result))

@@ -6,6 +6,10 @@ from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 from app.models import CustomsDeclaration, CustomsMaterial, OperationLog
 from app import db
+from app.utils.excel_import import (
+    ExcelImporter, FieldValidator, build_import_response,
+    allowed_file, get_import_template, safe_str, safe_int
+)
 
 customs_bp = Blueprint('customs', __name__)
 
@@ -96,6 +100,29 @@ def confirm_declaration(decl_id):
     return jsonify({'code': 200, 'message': '报关已归档'})
 
 
+@customs_bp.route('/declarations/<int:decl_id>', methods=['PUT'])
+@login_required
+def update_declaration(decl_id):
+    """更新报关单"""
+    declaration = CustomsDeclaration.query.get_or_404(decl_id)
+    data = request.get_json()
+    for field in ['declaration_no', 'batch_no', 'transport_task_id', 'status']:
+        if field in data:
+            setattr(declaration, field, data[field])
+    db.session.commit()
+    return jsonify({'code': 200, 'message': '报关单更新成功', 'data': declaration.to_dict()})
+
+
+@customs_bp.route('/declarations/<int:decl_id>', methods=['DELETE'])
+@login_required
+def delete_declaration(decl_id):
+    """删除报关单"""
+    declaration = CustomsDeclaration.query.get_or_404(decl_id)
+    declaration.is_deleted = 1
+    db.session.commit()
+    return jsonify({'code': 200, 'message': '删除成功'})
+
+
 @customs_bp.route('/materials', methods=['POST'])
 @login_required
 def upload_material():
@@ -122,3 +149,70 @@ def list_materials():
         query = query.filter_by(declaration_id=decl_id)
     materials = query.order_by(CustomsMaterial.uploaded_at.desc()).all()
     return jsonify({'code': 200, 'data': [m.to_dict() for m in materials]})
+
+
+# ===== Excel批量导入 =====
+
+@customs_bp.route('/declarations/import/template', methods=['GET'])
+@login_required
+def download_declaration_template():
+    """下载报关单导入模板"""
+    fields = [
+        {'name': 'declaration_no', 'display_name': '报关单号', 'required': True, 'example': 'CD20260601001'},
+        {'name': 'batch_no', 'display_name': '批次号', 'example': 'BATCH20260601'},
+        {'name': 'transport_task_id', 'display_name': '运输任务ID', 'example': '1'},
+        {'name': 'remark', 'display_name': '备注', 'example': ''},
+    ]
+    output = get_import_template(fields, sheet_name='报关单导入')
+    from flask import send_file
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name='报关单导入模板.xlsx'
+    )
+
+
+@customs_bp.route('/declarations/import', methods=['POST'])
+@login_required
+def import_declarations():
+    """批量导入报关单"""
+    if 'file' not in request.files:
+        return jsonify({'code': 400, 'message': '请上传文件'})
+
+    file = request.files['file']
+    if file.filename == '' or not allowed_file(file.filename):
+        return jsonify({'code': 400, 'message': '请上传有效的Excel文件（.xlsx或.xls）'})
+
+    validators = [
+        FieldValidator('declaration_no', '报关单号', required=True,
+                       unique_check=lambda v: CustomsDeclaration.query.filter_by(declaration_no=v, is_deleted=0).first() is not None),
+        FieldValidator('batch_no', '批次号'),
+        FieldValidator('transport_task_id', '运输任务ID', field_type='int'),
+        FieldValidator('remark', '备注'),
+    ]
+
+    def process_func(row, row_index):
+        declaration = CustomsDeclaration(
+            declaration_no=safe_str(row.get('declaration_no')),
+            batch_no=safe_str(row.get('batch_no')),
+            transport_task_id=safe_int(row.get('transport_task_id')),
+            remark=safe_str(row.get('remark')),
+            status='pending',
+            submitted_by=current_user.id,
+            submitted_at=datetime.now()
+        )
+        declaration.save()
+        return True, None
+
+    importer = ExcelImporter(file, validators=validators)
+    result = importer.run(process_func)
+
+    OperationLog(
+        user_id=current_user.id, username=current_user.username,
+        action='import', module='customs_declaration',
+        target_desc=f'批量导入报关单: 成功{result["success"]}条, 失败{result["fail"]}条',
+        ip_address=request.remote_addr
+    ).save()
+
+    return jsonify(build_import_response(result))

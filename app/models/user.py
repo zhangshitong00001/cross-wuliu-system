@@ -41,6 +41,7 @@ class User(UserMixin, BaseModel, db.Model):
     avatar = Column(String(256), comment='头像')
     role_id = Column(Integer, ForeignKey('roles.id'), comment='角色ID')
     status = Column(Integer, default=1, comment='状态：1-启用，0-禁用')
+    lang = Column(String(10), default='zh', comment='语言偏好：zh-中文，en-英文')
     last_login_at = Column(DateTime, comment='最后登录时间')
     last_login_ip = Column(String(50), comment='最后登录IP')
     

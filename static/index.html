@@ -1002,7 +1002,7 @@
                                 <button class="btn btn-outline-success btn-sm" @click="openImportDialog" v-if="addFormFields.length > 0" :title="I18n.t('common.import')">
                                     <i class="fas fa-file-import"></i>
                                 </button>
-                                <button class="btn btn-outline-primary btn-sm" @click="exportData" v-if="tableData.length > 0" :title="I18n.t('common.export')">
+                                <button class="btn btn-outline-primary btn-sm" @click="exportData" :title="I18n.t('common.export')">
                                     <i class="fas fa-download"></i>
                                 </button>
                                 <button class="btn btn-primary btn-sm" @click="openAddForm" v-if="addFormFields.length > 0">
@@ -2077,14 +2077,18 @@
                     }
                 }
 
-                // ===== 导出 =====
+                // ===== 导出（服务端查询导出全量数据） =====
                 async function exportData() {
                     const config = pageConfigs[currentPage.value];
-                    if (!config || tableData.value.length === 0) return;
+                    if (!config || !config.api) return;
                     try {
+                        // 构建查询参数（当前搜索条件）
+                        const params = {};
+                        if (searchKeyword.value) params.keyword = searchKeyword.value;
+
                         const res = await axiosInstance.post('/api/export', {
-                            data: tableData.value,
-                            filename: currentPage.value,
+                            source_api: config.api,
+                            params: params,
                             format: 'csv'
                         }, { responseType: 'blob' });
                         // 从Content-Disposition获取文件名

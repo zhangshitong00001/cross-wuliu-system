@@ -32,6 +32,16 @@ def create_role():
     return jsonify({'code': 200, 'message': '角色创建成功', 'data': role.to_dict()})
 
 
+@permission_bp.route('/roles/<int:role_id>', methods=['DELETE'])
+@login_required
+def delete_role(role_id):
+    """删除角色"""
+    role = Role.query.get_or_404(role_id)
+    role.is_deleted = 1
+    db.session.commit()
+    return jsonify({'code': 200, 'message': '删除成功'})
+
+
 @permission_bp.route('/roles/<int:role_id>/permissions', methods=['PUT'])
 @login_required
 def assign_permissions(role_id):

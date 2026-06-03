@@ -5,9 +5,9 @@
 
 ## 技术栈
 - **后端**: Python Flask 2.3.3 + SQLAlchemy 2.0
-- **数据库**: MySQL 8.0
+- **数据库**: PostgreSQL 16
 - **前端**: Vue.js 3 (CDN) + Bootstrap 5
-- **认证**: Flask-Login
+- **认证**: Flask-Login + Redis Session
 
 ## 功能模块
 
@@ -39,20 +39,20 @@
 
 ### 环境要求
 - Python 3.12+
-- MySQL 8.0+
-- Node.js (可选，用于前端开发)
+- PostgreSQL 14+
+- Redis 6+ (用于Session和验证码存储)
 
 ### 安装步骤
 
 ```bash
 # 1. 安装依赖
-pip install flask flask-sqlalchemy flask-cors flask-login pymysql
+pip install flask flask-sqlalchemy flask-cors flask-login psycopg2-binary redis captcha
 
 # 2. 创建数据库
-mysql -u root -p -e "CREATE DATABASE cross_border_logistics DEFAULT CHARACTER SET utf8mb4;"
+createdb logistics_db
 
 # 3. 修改配置
-# 编辑 config/config.py，修改数据库连接信息
+# 编辑 config/config.py，修改数据库连接信息和Redis配置
 
 # 4. 启动服务
 python run.py
@@ -60,9 +60,6 @@ python run.py
 
 ### 默认账号
 - 超级管理员: admin / admin123
-- 仓库操作员: 仓库操作员 / warehouse1
-- 运输人员: 运输人员 / transport1
-- 报关专员: 报关专员 / customs1
 
 ## API文档
 系统提供完整的RESTful API，所有业务接口以 `/api/` 开头。
@@ -73,29 +70,37 @@ python run.py
 | POST | /api/auth/login | 用户登录 |
 | POST | /api/auth/logout | 用户登出 |
 | GET | /api/auth/profile | 获取当前用户 |
-| GET | /api/auth/users | 用户列表 |
-| POST | /api/auth/users | 创建用户 |
+| GET | /api/auth/check | 检查登录状态 |
+| GET/POST/PUT/DELETE | /api/auth/users | 用户管理(CRUD) |
+| GET | /api/auth/roles | 角色列表 |
+| GET | /api/auth/captcha | 获取验证码 |
 
 ### 核心业务接口
 | 模块 | 方法 | 路径前缀 |
 |------|------|----------|
-| 云仓集货 | GET/POST | /api/warehouse/receipts |
-| 库存管理 | GET | /api/warehouse/inventory |
-| 批次管理 | GET/POST | /api/warehouse/batches |
-| 收件点 | GET/POST/PUT | /api/sorting/points |
-| 分装任务 | GET/POST | /api/sorting/tasks |
-| 文件管理 | GET/POST/PUT | /api/document/list |
-| 运输任务 | GET/POST | /api/transport/tasks |
-| 报关管理 | GET/POST | /api/customs/declarations |
-| 清关管理 | GET/POST | /api/clearance/records |
-| 配送管理 | GET/POST | /api/distribution/tasks |
-| 签收管理 | GET/POST | /api/sign/records |
-| 对账管理 | GET/POST | /api/reconciliation/records |
-| 结算管理 | GET/POST | /api/settlement/orders |
-| 支付管理 | GET/POST | /api/payment/records |
-| 物流跟踪 | GET | /api/tracking/query |
-| 异常预警 | GET/POST | /api/alert/list |
-| 计费规则 | GET/POST/PUT | /api/charging/rules |
+| 云仓集货 | GET/POST/PUT/DELETE | /api/warehouse/receipts |
+| 库存管理 | GET/PUT | /api/warehouse/inventory |
+| 批次管理 | GET/POST/PUT/DELETE | /api/warehouse/batches |
+| 收件点 | GET/POST/PUT/DELETE | /api/sorting/points |
+| 分装任务 | GET/POST/PUT/DELETE | /api/sorting/tasks |
+| 文件管理 | GET/POST/PUT/DELETE | /api/document/list |
+| 运输任务 | GET/POST/PUT/DELETE | /api/transport/tasks |
+| 车辆管理 | GET/POST/PUT/DELETE | /api/transport/vehicles |
+| 司机管理 | GET/POST/PUT/DELETE | /api/transport/drivers |
+| 报关管理 | GET/POST/PUT/DELETE | /api/customs/declarations |
+| 清关管理 | GET/POST/PUT/DELETE | /api/clearance/records |
+| 口岸运输 | GET/POST/PUT/DELETE | /api/port-transport/tasks |
+| 配送管理 | GET/POST/PUT/DELETE | /api/distribution/tasks |
+| 签收管理 | GET/POST/PUT/DELETE | /api/sign/records |
+| 对账管理 | GET/POST/PUT/DELETE | /api/reconciliation/records |
+| 结算管理 | GET/POST/PUT/DELETE | /api/settlement/orders |
+| 支付管理 | GET/POST/PUT/DELETE | /api/payment/records |
+| 物流跟踪 | GET/POST/PUT/DELETE | /api/tracking/list |
+| 异常预警 | GET/POST/PUT/DELETE | /api/alert/list |
+| 计费规则 | GET/POST/PUT/DELETE | /api/charging/rules |
+| 权限管理 | GET/POST/PUT/DELETE | /api/permission/roles |
+| 操作日志 | GET | /api/permission/logs |
+| 数据统计 | GET | /api/statistics/dashboard |
 
 ## 数据库模型
 系统包含27个数据表，覆盖所有业务场景：

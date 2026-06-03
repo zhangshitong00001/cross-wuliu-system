@@ -1,6 +1,7 @@
 """
 操作日志模型
 """
+from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
 from app.models.base import BaseModel, db
 
@@ -16,4 +17,4 @@ class OperationLog(BaseModel, db.Model):
     target_desc = Column(String(200), comment='操作对象描述')
     detail = Column(Text, comment='操作详情')
     ip_address = Column(String(50), comment='IP地址')
-    operation_time = Column(DateTime, comment='操作时间')
+    operation_time = Column(DateTime, default=datetime.now, comment='操作时间')
