@@ -735,16 +735,24 @@
                         <i class="fas fa-language me-1"></i>{{ currentLang === 'zh' ? 'EN' : '中' }}
                     </button>
                 </div>
-                <form @submit.prevent="handleLogin">
+
+                <!-- 登录Tab切换 -->
+                <div class="d-flex mb-4 border-bottom" style="gap:0;">
+                    <button class="btn btn-sm border-0 rounded-0 flex-fill" @click="loginTab='login'" :class="loginTab==='login'?'btn-primary text-white':'text-muted'" style="border-radius:8px 8px 0 0!important;">{{ I18n.t('login.btn') }}</button>
+                    <button class="btn btn-sm border-0 rounded-0 flex-fill" @click="loginTab='register'" :class="loginTab==='register'?'btn-primary text-white':'text-muted'" style="border-radius:8px 8px 0 0!important;">{{ I18n.t('login.register') }}</button>
+                    <button class="btn btn-sm border-0 rounded-0 flex-fill" @click="loginTab='forgot'" :class="loginTab==='forgot'?'btn-primary text-white':'text-muted'" style="border-radius:8px 8px 0 0!important;">{{ I18n.t('login.forgot') }}</button>
+                </div>
+
+                <!-- 登录表单 -->
+                <form @submit.prevent="handleLogin" v-if="loginTab==='login'">
                     <div class="mb-3">
                         <label class="form-label">{{ I18n.t('login.username') }}</label>
-                        <input type="text" class="form-control form-control-lg" v-model="loginForm.username" :placeholder="I18n.t('login.username.placeholder')" required autocomplete="username">
+                        <input type="text" class="form-control form-control-lg" v-model="loginForm.username" :placeholder="I18n.t('login.username.placeholder')" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">{{ I18n.t('login.password') }}</label>
-                        <input type="password" class="form-control form-control-lg" v-model="loginForm.password" :placeholder="I18n.t('login.password.placeholder')" required autocomplete="current-password">
+                        <input type="password" class="form-control form-control-lg" v-model="loginForm.password" :placeholder="I18n.t('login.password.placeholder')" required>
                     </div>
-                    <!-- 验证码 -->
                     <div class="mb-3" v-if="needCaptcha">
                         <label class="form-label">{{ I18n.t('login.captcha') }}</label>
                         <div class="d-flex gap-2 align-items-center">
@@ -752,17 +760,76 @@
                             <img :src="captchaImage" @click="loadCaptcha" style="cursor:pointer;border-radius:8px;height:44px;" :title="I18n.t('login.captcha.refresh')">
                         </div>
                     </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" v-model="loginForm.remember">
-                        <label class="form-check-label">{{ I18n.t('login.remember') }}</label>
-                    </div>
                     <div class="alert alert-danger" v-if="loginError">
                         <i class="fas fa-exclamation-circle me-1"></i> {{ loginError }}
-                        <span v-if="needCaptcha" class="d-block mt-1" style="font-size:12px;">{{ I18n.t('login.fail.captcha') }}</span>
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg w-100" :disabled="loginLoading">
                         <span v-if="loginLoading" class="spinner-border spinner-border-sm me-2"></span>
                         <span v-else><i class="fas fa-sign-in-alt me-2"></i>{{ I18n.t('login.btn') }}</span>
+                    </button>
+                </form>
+
+                <!-- 注册表单 -->
+                <form @submit.prevent="handleRegister" v-if="loginTab==='register'">
+                    <div class="mb-3">
+                        <label class="form-label">{{ I18n.t('login.username') }} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" v-model="regForm.username" :placeholder="I18n.t('login.username.placeholder')" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ I18n.t('login.email') }} <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="email" class="form-control" v-model="regForm.email" :placeholder="I18n.t('login.email.placeholder')" required>
+                            <button class="btn btn-outline-primary" type="button" @click="sendRegCode" :disabled="regCodeCountdown>0" style="white-space:nowrap;">
+                                {{ regCodeCountdown>0 ? I18n.t('login.emailCode.resend',{s:regCodeCountdown}) : (regCodeSent ? I18n.t('login.emailCode.resend',{s:0}) : I18n.t('login.emailCode.send')) }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ I18n.t('login.emailCode') }} <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" v-model="regForm.emailCode" :placeholder="I18n.t('login.emailCode.placeholder')" maxlength="6" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ I18n.t('login.password') }} <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" v-model="regForm.password" :placeholder="I18n.t('login.password.rule')" required>
+                        <small class="text-muted">{{ I18n.t('login.password.rule') }}</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ I18n.t('login.realName') }}</label>
+                        <input type="text" class="form-control" v-model="regForm.realName" :placeholder="I18n.t('login.realName.placeholder')">
+                    </div>
+                    <div class="alert alert-danger" v-if="loginError"><i class="fas fa-exclamation-circle me-1"></i> {{ loginError }}</div>
+                    <div class="alert alert-success" v-if="loginSuccess"><i class="fas fa-check-circle me-1"></i> {{ loginSuccess }}</div>
+                    <button type="submit" class="btn btn-success btn-lg w-100" :disabled="loginLoading">
+                        <span v-if="loginLoading" class="spinner-border spinner-border-sm me-2"></span>
+                        <span v-else><i class="fas fa-user-plus me-2"></i>{{ I18n.t('login.register.btn') }}</span>
+                    </button>
+                </form>
+
+                <!-- 忘记密码表单 -->
+                <form @submit.prevent="handleResetPassword" v-if="loginTab==='forgot'">
+                    <div class="mb-3">
+                        <label class="form-label">{{ I18n.t('login.email') }} <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" v-model="forgotForm.email" :placeholder="I18n.t('login.email.placeholder')" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ I18n.t('login.emailCode') }} <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" v-model="forgotForm.code" :placeholder="I18n.t('login.emailCode.placeholder')" maxlength="6" required>
+                            <button class="btn btn-outline-primary" type="button" @click="sendForgotCode" :disabled="forgotCodeCountdown>0" style="white-space:nowrap;">
+                                {{ forgotCodeCountdown>0 ? I18n.t('login.emailCode.resend',{s:forgotCodeCountdown}) : I18n.t('login.emailCode.send') }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ I18n.t('login.reset.newPassword') }} <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" v-model="forgotForm.newPassword" :placeholder="I18n.t('login.password.rule')" required>
+                        <small class="text-muted">{{ I18n.t('login.password.rule') }}</small>
+                    </div>
+                    <div class="alert alert-danger" v-if="loginError"><i class="fas fa-exclamation-circle me-1"></i> {{ loginError }}</div>
+                    <div class="alert alert-success" v-if="loginSuccess"><i class="fas fa-check-circle me-1"></i> {{ loginSuccess }}</div>
+                    <button type="submit" class="btn btn-warning btn-lg w-100" :disabled="loginLoading">
+                        <span v-if="loginLoading" class="spinner-border spinner-border-sm me-2"></span>
+                        <span v-else><i class="fas fa-key me-2"></i>{{ I18n.t('login.reset.btn') }}</span>
                     </button>
                 </form>
             </div>
@@ -1968,6 +2035,100 @@
                     currentUser.value = {};
                 }
 
+                // ===== 注册/忘记密码 =====
+                const loginTab = ref('login');
+                const loginSuccess = ref('');
+                const regForm = reactive({ username: '', email: '', emailCode: '', password: '', realName: '' });
+                const forgotForm = reactive({ email: '', code: '', newPassword: '' });
+                const regCodeSent = ref(false);
+                const regCodeCountdown = ref(0);
+                const forgotCodeCountdown = ref(0);
+
+                function startCountdown(refVar) {
+                    refVar.value = 60;
+                    const timer = setInterval(() => {
+                        refVar.value--;
+                        if (refVar.value <= 0) clearInterval(timer);
+                    }, 1000);
+                }
+
+                async function sendRegCode() {
+                    if (!regForm.email) { loginError.value = '请输入邮箱'; return; }
+                    loginError.value = '';
+                    try {
+                        const res = await axiosInstance.post('/api/auth/send-email-code', { email: regForm.email, purpose: 'register' });
+                        if (res.data.code === 200) {
+                            regCodeSent.value = true;
+                            startCountdown(regCodeCountdown);
+                            showToast(res.data.message);
+                        } else {
+                            loginError.value = res.data.message;
+                        }
+                    } catch (err) {
+                        loginError.value = err.response?.data?.message || '发送失败';
+                    }
+                }
+
+                async function handleRegister() {
+                    loginLoading.value = true; loginError.value = ''; loginSuccess.value = '';
+                    try {
+                        const res = await axiosInstance.post('/api/auth/register', {
+                            username: regForm.username,
+                            password: regForm.password,
+                            email: regForm.email,
+                            email_code: regForm.emailCode,
+                            real_name: regForm.realName
+                        });
+                        if (res.data.code === 200) {
+                            loginSuccess.value = res.data.message;
+                            loginError.value = '';
+                            Object.assign(regForm, { username: '', email: '', emailCode: '', password: '', realName: '' });
+                            setTimeout(() => { loginTab.value = 'login'; loginSuccess.value = ''; }, 1500);
+                        } else {
+                            loginError.value = res.data.message;
+                        }
+                    } catch (err) {
+                        loginError.value = err.response?.data?.message || '注册失败';
+                    } finally { loginLoading.value = false; }
+                }
+
+                async function sendForgotCode() {
+                    if (!forgotForm.email) { loginError.value = '请输入邮箱'; return; }
+                    loginError.value = '';
+                    try {
+                        const res = await axiosInstance.post('/api/auth/forgot-password', { email: forgotForm.email });
+                        if (res.data.code === 200) {
+                            startCountdown(forgotCodeCountdown);
+                            showToast(res.data.message);
+                        } else {
+                            loginError.value = res.data.message;
+                        }
+                    } catch (err) {
+                        loginError.value = err.response?.data?.message || '发送失败';
+                    }
+                }
+
+                async function handleResetPassword() {
+                    loginLoading.value = true; loginError.value = ''; loginSuccess.value = '';
+                    try {
+                        const res = await axiosInstance.post('/api/auth/reset-password', {
+                            email: forgotForm.email,
+                            code: forgotForm.code,
+                            new_password: forgotForm.newPassword
+                        });
+                        if (res.data.code === 200) {
+                            loginSuccess.value = res.data.message;
+                            loginError.value = '';
+                            Object.assign(forgotForm, { email: '', code: '', newPassword: '' });
+                            setTimeout(() => { loginTab.value = 'login'; loginSuccess.value = ''; }, 1500);
+                        } else {
+                            loginError.value = res.data.message;
+                        }
+                    } catch (err) {
+                        loginError.value = err.response?.data?.message || '重置失败';
+                    } finally { loginLoading.value = false; }
+                }
+
                 // ===== 导航 =====
                 function navigate(page) {
                     currentPage.value = page;
@@ -2499,7 +2660,9 @@
 
                 return {
                     isLoggedIn, currentUser, currentPage, pageTitle,
-                    loginForm, loginLoading, loginError,
+                    loginForm, loginLoading, loginError, loginSuccess,
+                    loginTab, regForm, forgotForm, regCodeSent, regCodeCountdown, forgotCodeCountdown,
+                    sendRegCode, handleRegister, sendForgotCode, handleResetPassword,
                     needCaptcha, captchaImage, captchaCode, loadCaptcha,
                     searchKeyword, tableData, tableColumns, tableLoading,
                     currentPageNum, totalPages, perPage, totalRecords, visiblePages,
