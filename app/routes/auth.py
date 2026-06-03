@@ -1,19 +1,24 @@
 """
-认证管理 - 登录、登出、用户管理（支持Redis Session + 图片验证码）
+认证管理 - 登录、登出、注册、密码重置、用户管理（支持Redis Session + 邮箱验证码）
 """
 import uuid
 import io
 import base64
+import re
+import smtplib
+from email.mime.text import MIMEText
 from datetime import datetime
 from flask import Blueprint, request, jsonify, session
 from flask_login import login_user, logout_user, login_required, current_user
 from captcha.image import ImageCaptcha
-from app.models import User, Role, OperationLog
+from app.models import User, Role, Permission, OperationLog
 from app import db
 from app.utils.redis_client import (
     save_captcha, verify_captcha,
     save_session_token, get_session_user, delete_session,
-    incr_login_fail, get_login_fail_count, reset_login_fail
+    incr_login_fail, get_login_fail_count, reset_login_fail,
+    save_email_code, verify_email_code,
+    save_reset_token, get_reset_email, delete_reset_token,
 )
 from config.config import Config
 from app.utils.excel_import import (
@@ -25,15 +30,184 @@ auth_bp = Blueprint('auth', __name__)
 
 
 def _get_user_detail(user):
-    """获取用户详细信息（含角色名）"""
+    """获取用户详细信息（含角色名和权限）"""
     data = user.to_dict()
     if user.role:
         data['role_name'] = user.role.name
         data['role_code'] = user.role.code
+        data['permissions'] = [p.code for p in user.role.permissions] if user.role.permissions else []
     else:
         data['role_name'] = '无角色'
         data['role_code'] = ''
+        data['permissions'] = []
     return data
+
+
+def _send_email(to_email, subject, body):
+    """发送邮件（支持SMTP，失败时打印到日志）"""
+    if not Config.SMTP_USER or not Config.SMTP_PASSWORD:
+        from flask import current_app
+        current_app.logger.warning(f'邮件未配置，跳过发送。收件人:{to_email}, 主题:{subject}, 内容:{body}')
+        return False
+    try:
+        msg = MIMEText(body, 'html', 'utf-8')
+        msg['Subject'] = subject
+        msg['From'] = Config.SMTP_FROM
+        msg['To'] = to_email
+        server = smtplib.SMTP(Config.SMTP_HOST, Config.SMTP_PORT, timeout=10)
+        server.starttls()
+        server.login(Config.SMTP_USER, Config.SMTP_PASSWORD)
+        server.sendmail(Config.SMTP_FROM, [to_email], msg.as_string())
+        server.quit()
+        return True
+    except Exception as e:
+        from flask import current_app
+        current_app.logger.error(f'邮件发送失败: {e}')
+        return False
+
+
+def _validate_password(password):
+    """验证密码复杂度：至少8位，含大小写字母和数字"""
+    if len(password) < 8:
+        return False, '密码至少8个字符'
+    if not re.search(r'[a-z]', password):
+        return False, '密码必须包含小写字母'
+    if not re.search(r'[A-Z]', password):
+        return False, '密码必须包含大写字母'
+    if not re.search(r'[0-9]', password):
+        return False, '密码必须包含数字'
+    return True, ''
+
+
+# ===== 用户注册 =====
+@auth_bp.route('/register', methods=['POST'])
+def register():
+    """用户注册（需邮箱验证码）"""
+    data = request.get_json()
+    username = (data.get('username') or '').strip()
+    password = data.get('password') or ''
+    email = (data.get('email') or '').strip()
+    real_name = (data.get('real_name') or '').strip()
+    phone = (data.get('phone') or '').strip()
+    email_code = (data.get('email_code') or '').strip()
+
+    if not username or not password or not email:
+        return jsonify({'code': 400, 'message': '用户名、密码、邮箱为必填项'})
+
+    if User.query.filter_by(username=username, is_deleted=0).first():
+        return jsonify({'code': 400, 'message': '用户名已存在'})
+
+    if User.query.filter_by(email=email, is_deleted=0).first():
+        return jsonify({'code': 400, 'message': '该邮箱已被注册'})
+
+    # 密码复杂度检查
+    valid, err_msg = _validate_password(password)
+    if not valid:
+        return jsonify({'code': 400, 'message': err_msg})
+
+    # 验证邮箱验证码
+    if not email_code or not verify_email_code(email, email_code):
+        return jsonify({'code': 400, 'message': '邮箱验证码错误或已过期'})
+
+    # 创建用户（默认customer角色）
+    customer_role = Role.query.filter_by(code='customer').first()
+    user = User(
+        username=username,
+        real_name=real_name or username,
+        email=email,
+        phone=phone,
+        role_id=customer_role.id if customer_role else None,
+        status=1
+    )
+    user.set_password(password)
+    user.save()
+
+    return jsonify({'code': 200, 'message': '注册成功，请登录'})
+
+
+@auth_bp.route('/send-email-code', methods=['POST'])
+def send_email_code():
+    """发送邮箱验证码"""
+    data = request.get_json()
+    email = (data.get('email') or '').strip()
+    purpose = data.get('purpose', 'register')  # register 或 reset_password
+
+    if not email or not re.match(r'^[^@\s]+@[^@\s]+\.[^@\s]+$', email):
+        return jsonify({'code': 400, 'message': '请输入有效的邮箱地址'})
+
+    # 生成6位数字验证码
+    import random
+    code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    save_email_code(email, code, Config.EMAIL_CODE_EXPIRE)
+
+    # 发送邮件
+    if purpose == 'reset_password':
+        subject = '跨境物流管理系统 - 密码重置验证码'
+        body = f'<p>您正在重置密码，验证码：<b style="font-size:24px">{code}</b></p><p>有效期10分钟，请勿泄露。</p>'
+    else:
+        subject = '跨境物流管理系统 - 注册验证码'
+        body = f'<p>感谢注册跨境物流管理系统！您的验证码：<b style="font-size:24px">{code}</b></p><p>有效期10分钟。</p>'
+
+    _send_email(email, subject, body)
+
+    return jsonify({'code': 200, 'message': '验证码已发送（如未收到请检查垃圾邮件）'})
+
+
+# ===== 忘记密码 =====
+@auth_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    """忘记密码 - 发送重置链接"""
+    data = request.get_json()
+    email = (data.get('email') or '').strip()
+
+    user = User.query.filter_by(email=email, is_deleted=0).first()
+    if not user:
+        return jsonify({'code': 400, 'message': '该邮箱未注册'})
+
+    # 生成重置token
+    token = str(uuid.uuid4()).replace('-', '')
+    save_reset_token(token, email, Config.EMAIL_CODE_EXPIRE)
+
+    # 发送包含验证码的邮件（使用验证码而非链接，更简单）
+    import random
+    code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+    save_email_code(email, code, Config.EMAIL_CODE_EXPIRE)
+
+    subject = '跨境物流管理系统 - 密码重置'
+    body = f'<p>您的密码重置验证码：<b style="font-size:24px">{code}</b></p><p>有效期10分钟。用户名：{user.username}</p>'
+    _send_email(email, subject, body)
+
+    return jsonify({'code': 200, 'message': '重置验证码已发送至您的邮箱', 'data': {'username': user.username}})
+
+
+@auth_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    """重置密码（通过邮箱验证码）"""
+    data = request.get_json()
+    email = (data.get('email') or '').strip()
+    code = (data.get('code') or '').strip()
+    new_password = data.get('new_password') or ''
+
+    if not email or not code or not new_password:
+        return jsonify({'code': 400, 'message': '请填写完整信息'})
+
+    # 验证码检查
+    if not verify_email_code(email, code):
+        return jsonify({'code': 400, 'message': '验证码错误或已过期'})
+
+    # 密码复杂度
+    valid, err_msg = _validate_password(new_password)
+    if not valid:
+        return jsonify({'code': 400, 'message': err_msg})
+
+    user = User.query.filter_by(email=email, is_deleted=0).first()
+    if not user:
+        return jsonify({'code': 400, 'message': '用户不存在'})
+
+    user.set_password(new_password)
+    user.save()
+
+    return jsonify({'code': 200, 'message': '密码重置成功，请使用新密码登录'})
 
 
 @auth_bp.route('/captcha', methods=['GET'])
@@ -356,9 +530,58 @@ def delete_user(user_id):
 @auth_bp.route('/roles', methods=['GET'])
 @login_required
 def list_roles():
-    """角色列表"""
+    """角色列表（含权限）"""
     roles = Role.query.filter_by(is_deleted=0).all()
-    return jsonify({'code': 200, 'data': [r.to_dict() for r in roles]})
+    result = []
+    for r in roles:
+        d = r.to_dict()
+        d['permissions'] = [{'id': p.id, 'code': p.code, 'name': p.name, 'module': p.module} for p in r.permissions]
+        result.append(d)
+    return jsonify({'code': 200, 'data': result})
+
+
+@auth_bp.route('/permissions', methods=['GET'])
+@login_required
+def list_permissions():
+    """权限列表（按模块分组）"""
+    permissions = Permission.query.filter_by(is_deleted=0).all()
+    modules = {}
+    for p in permissions:
+        m = p.module or 'other'
+        if m not in modules:
+            modules[m] = []
+        modules[m].append({'id': p.id, 'code': p.code, 'name': p.name})
+    return jsonify({'code': 200, 'data': modules})
+
+
+@auth_bp.route('/roles/<int:role_id>/permissions', methods=['PUT'])
+@login_required
+def update_role_permissions(role_id):
+    """更新角色权限"""
+    role = Role.query.get_or_404(role_id)
+    data = request.get_json()
+    perm_ids = data.get('permission_ids', [])
+
+    # 清除旧权限
+    role.permissions = []
+    db.session.flush()
+
+    # 设置新权限
+    for pid in perm_ids:
+        perm = Permission.query.get(pid)
+        if perm:
+            role.permissions.append(perm)
+
+    db.session.commit()
+
+    OperationLog(
+        user_id=current_user.id, username=current_user.username,
+        action='update', module='role_permission', target_id=role.id,
+        target_desc=f'更新角色权限: {role.name}',
+        ip_address=request.remote_addr
+    ).save()
+
+    return jsonify({'code': 200, 'message': '权限更新成功'})
 
 
 # ===== Excel批量导入 =====

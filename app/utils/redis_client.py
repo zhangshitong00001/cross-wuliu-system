@@ -84,3 +84,52 @@ def reset_login_fail(ip):
     """重置登录失败计数"""
     r = get_redis()
     r.delete(f'login_fail:{ip}')
+
+
+# ===== 邮箱验证码 =====
+def save_email_code(email, code, expire=600):
+    """保存邮箱验证码"""
+    r = get_redis()
+    r.setex(f'email_code:{email}', expire, code)
+
+
+def verify_email_code(email, code):
+    """验证邮箱验证码（验证后删除）"""
+    r = get_redis()
+    key = f'email_code:{email}'
+    saved = r.get(key)
+    if saved and str(saved) == str(code):
+        r.delete(key)
+        return True
+    return False
+
+
+# ===== 密码重置Token =====
+def save_reset_token(token, email, expire=600):
+    """保存密码重置token"""
+    r = get_redis()
+    r.setex(f'reset_token:{token}', expire, email)
+
+
+def get_reset_email(token):
+    """获取重置token对应的邮箱"""
+    r = get_redis()
+    return r.get(f'reset_token:{token}')
+
+
+def delete_reset_token(token):
+    """删除密码重置token"""
+    r = get_redis()
+    r.delete(f'reset_token:{token}')
+
+
+# ===== Session活动刷新 =====
+def refresh_session(token, expire=600):
+    """刷新session过期时间（每次API请求调用）"""
+    r = get_redis()
+    r.expire(f'session:{token}', expire)
+
+
+def touch_session(token, expire=600):
+    """刷新session（未通过login_required的路由使用）"""
+    return refresh_session(token, expire)

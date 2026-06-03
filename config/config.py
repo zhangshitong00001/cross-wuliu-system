@@ -42,14 +42,22 @@ class Config:
     REDIS_DB = os.environ.get('REDIS_DB') or 0
 
     # 会话过期时间（秒）
-    SESSION_TIMEOUT = 7200  # 2小时
+    SESSION_TIMEOUT = 600  # 10分钟无操作过期
 
     # 验证码过期时间（秒）
     CAPTCHA_EXPIRE = 300  # 5分钟
+    EMAIL_CODE_EXPIRE = 600  # 邮箱验证码10分钟
 
     # 登录失败锁定
     LOGIN_FAIL_LIMIT = 5  # 5次失败后需要验证码
     LOGIN_LOCK_MINUTES = 30  # 锁定30分钟
+
+    # 邮件配置
+    SMTP_HOST = os.environ.get('SMTP_HOST') or 'smtp.qq.com'
+    SMTP_PORT = int(os.environ.get('SMTP_PORT') or 587)
+    SMTP_USER = os.environ.get('SMTP_USER') or ''
+    SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD') or ''
+    SMTP_FROM = os.environ.get('SMTP_FROM') or 'noreply@logistics.com'
 
     # 备份
     BACKUP_DIR = os.path.join(BASE_DIR, 'backup')

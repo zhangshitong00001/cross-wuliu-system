@@ -63,10 +63,10 @@ def create_app(config_name='default'):
             if user_id:
                 user = User.query.get(user_id)
                 if user and user.status == 1:
-                    # 刷新过期时间
-                    from app.utils.redis_client import save_session_token
+                    # 刷新过期时间（10分钟无操作过期）
+                    from app.utils.redis_client import refresh_session
                     from config.config import Config
-                    save_session_token(user_id, token, Config.SESSION_TIMEOUT)
+                    refresh_session(token, Config.SESSION_TIMEOUT)
                     login_user(user)
 
     # 注册蓝图
