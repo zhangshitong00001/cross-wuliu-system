@@ -57,7 +57,7 @@ class Config:
     SMTP_PORT = int(os.environ.get('SMTP_PORT') or 465)
     SMTP_USE_SSL = os.environ.get('SMTP_USE_SSL', 'true').lower() == 'true'
     SMTP_USER = os.environ.get('SMTP_USER') or 'zst_9609_4557@163.com'
-    SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD') or 'QAUtC3BiuSgFacNq'
+    SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD') or 'NVcMequn85xiA7BA'
     SMTP_FROM = os.environ.get('SMTP_FROM') or 'zst_9609_4557@163.com'
 
     # 备份
