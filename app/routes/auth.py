@@ -382,7 +382,7 @@ def download_user_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='用户导入模板.xlsx'
+        download_name='用户-用户导入模板.xlsx'
     )
 
 

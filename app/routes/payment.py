@@ -180,7 +180,7 @@ def download_payment_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='支付记录导入模板.xlsx'
+        download_name='支付-记录导入模板.xlsx'
     )
 
 
@@ -248,7 +248,7 @@ def download_invoice_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='发票导入模板.xlsx'
+        download_name='支付-发票导入模板.xlsx'
     )
 
 

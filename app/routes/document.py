@@ -165,7 +165,7 @@ def download_document_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='文件导入模板.xlsx'
+        download_name='文件管理-文件导入模板.xlsx'
     )
 
 

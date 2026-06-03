@@ -274,7 +274,7 @@ def download_point_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='收件点导入模板.xlsx'
+        download_name='分装-收件点导入模板.xlsx'
     )
 
 
@@ -351,7 +351,7 @@ def download_task_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='分装任务导入模板.xlsx'
+        download_name='分装-任务导入模板.xlsx'
     )
 
 

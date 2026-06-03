@@ -176,7 +176,7 @@ def download_task_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='配送任务导入模板.xlsx'
+        download_name='配送-任务导入模板.xlsx'
     )
 
 

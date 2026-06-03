@@ -135,7 +135,7 @@ def download_sign_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='签收记录导入模板.xlsx'
+        download_name='签收-记录导入模板.xlsx'
     )
 
 

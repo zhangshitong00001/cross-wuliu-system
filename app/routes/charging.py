@@ -184,7 +184,7 @@ def download_rule_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='计费规则导入模板.xlsx'
+        download_name='计费-规则导入模板.xlsx'
     )
 
 

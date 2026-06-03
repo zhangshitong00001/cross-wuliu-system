@@ -137,7 +137,7 @@ def download_settlement_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='结算单导入模板.xlsx'
+        download_name='结算-结算单导入模板.xlsx'
     )
 
 

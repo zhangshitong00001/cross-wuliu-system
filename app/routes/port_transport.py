@@ -148,7 +148,7 @@ def download_task_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='口岸运输任务导入模板.xlsx'
+        download_name='口岸运输-任务导入模板.xlsx'
     )
 
 

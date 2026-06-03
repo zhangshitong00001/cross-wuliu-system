@@ -334,7 +334,7 @@ def download_task_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='运输任务导入模板.xlsx'
+        download_name='运输-任务导入模板.xlsx'
     )
 
 
@@ -417,7 +417,7 @@ def download_vehicle_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='车辆导入模板.xlsx'
+        download_name='运输-车辆导入模板.xlsx'
     )
 
 
@@ -491,7 +491,7 @@ def download_driver_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='司机导入模板.xlsx'
+        download_name='运输-司机导入模板.xlsx'
     )
 
 

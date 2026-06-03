@@ -368,7 +368,7 @@ def download_receipt_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='收货登记导入模板.xlsx'
+        download_name='仓储-收货登记导入模板.xlsx'
     )
 
 
@@ -481,7 +481,7 @@ def download_batch_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='批次导入模板.xlsx'
+        download_name='仓储-批次导入模板.xlsx'
     )
 
 

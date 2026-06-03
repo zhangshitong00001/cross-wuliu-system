@@ -156,7 +156,7 @@ def download_alert_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='预警导入模板.xlsx'
+        download_name='预警-记录导入模板.xlsx'
     )
 
 

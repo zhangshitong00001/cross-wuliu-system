@@ -143,7 +143,7 @@ def download_clearance_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='清关记录导入模板.xlsx'
+        download_name='清关-记录导入模板.xlsx'
     )
 
 

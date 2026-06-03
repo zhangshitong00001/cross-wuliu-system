@@ -2100,12 +2100,15 @@
                             return;
                         }
 
-                        // 获取文件名
-                        const disposition = res.headers['content-disposition'];
+                        // 获取文件名：优先RFC 5987编码名
+                        const disposition = res.headers['content-disposition'] || '';
                         let filename = currentPage.value + '_' + new Date().toISOString().slice(0, 10) + '.csv';
-                        if (disposition) {
-                            const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-                            if (match) filename = decodeURIComponent(match[1].replace(/['"]/g, ''));
+                        const fnStar = disposition.match(/filename\*=UTF-8''([^;]*)/i);
+                        if (fnStar) {
+                            filename = decodeURIComponent(fnStar[1]);
+                        } else {
+                            const fnMatch = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                            if (fnMatch) filename = decodeURIComponent(fnMatch[1].replace(/['"]/g, ''));
                         }
 
                         // 创建下载
@@ -2356,12 +2359,15 @@
                         const downloadUrl = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = downloadUrl;
-                        // 从响应头获取文件名或使用默认名
-                        const disposition = res.headers['content-disposition'];
+                        // 从响应头获取文件名：优先RFC 5987编码名(filename*=)，其次ascii名(filename=)
+                        const disposition = res.headers['content-disposition'] || '';
                         let filename = currentPage.value + '_导入模板.xlsx';
-                        if (disposition) {
-                            const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-                            if (match) filename = match[1].replace(/['"]/g, '');
+                        const fnStar = disposition.match(/filename\*=UTF-8''([^;]*)/i);
+                        if (fnStar) {
+                            filename = decodeURIComponent(fnStar[1]);
+                        } else {
+                            const fnMatch = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                            if (fnMatch) filename = fnMatch[1].replace(/['"]/g, '');
                         }
                         a.download = filename;
                         document.body.appendChild(a);

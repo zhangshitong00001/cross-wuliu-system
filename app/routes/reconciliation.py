@@ -148,7 +148,7 @@ def download_recon_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='对账记录导入模板.xlsx'
+        download_name='对账-记录导入模板.xlsx'
     )
 
 

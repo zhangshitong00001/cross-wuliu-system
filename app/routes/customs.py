@@ -169,7 +169,7 @@ def download_declaration_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='报关单导入模板.xlsx'
+        download_name='报关-报关单导入模板.xlsx'
     )
 
 

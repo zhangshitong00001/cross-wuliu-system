@@ -154,7 +154,7 @@ def download_tracking_template():
         output,
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name='物流跟踪导入模板.xlsx'
+        download_name='物流跟踪-记录导入模板.xlsx'
     )
 
 
