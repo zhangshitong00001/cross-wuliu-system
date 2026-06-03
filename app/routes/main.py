@@ -15,7 +15,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 
 @main_bp.route('/')
 def index():
-    return send_file(os.path.join(BASE_DIR, 'static', 'index.html'))
+    response = send_file(os.path.join(BASE_DIR, 'static', 'index.html'))
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 
 @main_bp.route('/health')
