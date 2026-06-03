@@ -12,17 +12,14 @@ def export_to_csv(data, filename_prefix='export'):
     将数据导出为CSV格式（含UTF-8 BOM，确保中文在Excel中正常显示）
     :param data: 字典列表
     :param filename_prefix: 文件名前缀
-    :return: (csv_content, filename)
+    :return: (csv_bytes, filename)  bytes类型
     """
     if not data:
-        return '', f'{filename_prefix}_{datetime.now().strftime("%Y%m%d")}.csv'
+        return b'', f'{filename_prefix}_{datetime.now().strftime("%Y%m%d")}.csv'
 
     output = io.StringIO()
-    # 写入UTF-8 BOM，确保Excel正确识别UTF-8编码
-    output.write('﻿')
     writer = csv.DictWriter(output, fieldnames=data[0].keys())
     writer.writeheader()
-    # 处理复杂类型（dict/list转JSON字符串，None转空字符串）
     cleaned_data = []
     for row in data:
         cleaned_row = {}
@@ -37,7 +34,8 @@ def export_to_csv(data, filename_prefix='export'):
     writer.writerows(cleaned_data)
 
     filename = f'{filename_prefix}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
-    return output.getvalue(), filename
+    # 编码为UTF-8并添加BOM（确保Excel正确识别中文）
+    return b'\xef\xbb\xbf' + output.getvalue().encode('utf-8'), filename
 
 
 def export_to_json(data, filename_prefix='export'):

@@ -198,7 +198,7 @@ def export_data():
             content, fname = export_to_csv(rows, filename)
             return Response(
                 content,
-                mimetype='text/csv; charset=utf-8-sig',
+                mimetype='text/csv',
                 headers={'Content-Disposition': f'attachment; filename={fname}'}
             )
 
@@ -238,7 +238,7 @@ def export_data():
             content, fname = export_to_csv(rows, filename)
             return Response(
                 content,
-                mimetype='text/csv; charset=utf-8-sig',
+                mimetype='text/csv',
                 headers={'Content-Disposition': f'attachment; filename={fname}'}
             )
     except Exception as e:

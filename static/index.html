@@ -2082,7 +2082,6 @@
                     const config = pageConfigs[currentPage.value];
                     if (!config || !config.api) return;
                     try {
-                        // 构建查询参数（当前搜索条件）
                         const params = {};
                         if (searchKeyword.value) params.keyword = searchKeyword.value;
 
@@ -2091,24 +2090,40 @@
                             params: params,
                             format: 'csv'
                         }, { responseType: 'blob' });
-                        // 从Content-Disposition获取文件名
+
+                        // 如果返回的是JSON错误（Content-Type为application/json）
+                        const contentType = res.headers['content-type'] || '';
+                        if (contentType.includes('application/json')) {
+                            const text = await new Response(res.data).text();
+                            const err = JSON.parse(text);
+                            showToast(err.message || I18n.t('common.exportFail'), 'error');
+                            return;
+                        }
+
+                        // 获取文件名
                         const disposition = res.headers['content-disposition'];
                         let filename = currentPage.value + '_' + new Date().toISOString().slice(0, 10) + '.csv';
                         if (disposition) {
                             const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-                            if (match) filename = match[1].replace(/['"]/g, '');
+                            if (match) filename = decodeURIComponent(match[1].replace(/['"]/g, ''));
                         }
-                        // 创建下载链接（res.data已是Blob）
-                        const url = URL.createObjectURL(res.data);
+
+                        // 创建下载
+                        const blob = res.data instanceof Blob ? res.data : new Blob([res.data], {type: 'text/csv;charset=utf-8'});
+                        const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
                         a.download = filename;
+                        a.style.display = 'none';
                         document.body.appendChild(a);
                         a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
+                        setTimeout(() => {
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                        }, 100);
                         showToast(I18n.t('common.exportSuccess'));
                     } catch (err) {
+                        console.error('Export failed:', err);
                         showToast(I18n.t('common.exportFail'), 'error');
                     }
                 }
