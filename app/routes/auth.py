@@ -16,6 +16,10 @@ from app.utils.redis_client import (
     incr_login_fail, get_login_fail_count, reset_login_fail
 )
 from config.config import Config
+from app.utils.excel_import import (
+    allowed_file, get_import_template, ExcelImporter, FieldValidator,
+    safe_str, safe_int, build_import_response
+)
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -209,6 +213,23 @@ def check_login():
     })
 
 
+@auth_bp.route('/lang', methods=['PUT'])
+@login_required
+def update_lang():
+    """更新用户语言偏好"""
+    data = request.get_json(silent=True) or {}
+    lang = data.get('lang', 'zh')
+    if lang not in ('zh', 'en'):
+        lang = 'zh'
+
+    user = User.query.get(current_user.id)
+    if user:
+        user.lang = lang
+        user.save()
+
+    return jsonify({'code': 200, 'data': {'lang': lang}})
+
+
 # ===== 用户管理 =====
 
 @auth_bp.route('/users', methods=['GET'])
@@ -339,3 +360,76 @@ def list_roles():
     roles = Role.query.filter_by(is_deleted=0).all()
     return jsonify({'code': 200, 'data': [r.to_dict() for r in roles]})
 
+
+# ===== Excel批量导入 =====
+
+@auth_bp.route('/users/import/template', methods=['GET'])
+@login_required
+def download_user_template():
+    """下载用户导入模板"""
+    fields = [
+        {'name': 'username', 'display_name': '用户名', 'required': True, 'example': 'zhangsan'},
+        {'name': 'real_name', 'display_name': '真实姓名', 'example': '张三'},
+        {'name': 'email', 'display_name': '邮箱', 'example': 'zhangsan@example.com'},
+        {'name': 'phone', 'display_name': '手机号', 'example': '13800138000'},
+        {'name': 'password', 'display_name': '密码', 'example': '123456'},
+        {'name': 'role_id', 'display_name': '角色ID', 'example': '1'},
+        {'name': 'status', 'display_name': '状态', 'example': '1'},
+    ]
+    output = get_import_template(fields, sheet_name='用户导入')
+    from flask import send_file
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name='用户导入模板.xlsx'
+    )
+
+
+@auth_bp.route('/users/import', methods=['POST'])
+@login_required
+def import_users():
+    """批量导入用户"""
+    if 'file' not in request.files:
+        return jsonify({'code': 400, 'message': '请上传文件'})
+
+    file = request.files['file']
+    if file.filename == '' or not allowed_file(file.filename):
+        return jsonify({'code': 400, 'message': '请上传有效的Excel文件（.xlsx或.xls）'})
+
+    validators = [
+        FieldValidator('username', '用户名', required=True,
+                       unique_check=lambda v: User.query.filter_by(username=v, is_deleted=0).first() is not None),
+        FieldValidator('real_name', '真实姓名'),
+        FieldValidator('email', '邮箱'),
+        FieldValidator('phone', '手机号'),
+        FieldValidator('password', '密码'),
+        FieldValidator('role_id', '角色ID', field_type='int'),
+        FieldValidator('status', '状态', field_type='int', options=[0, 1]),
+    ]
+
+    def process_func(row, row_index):
+        user = User(
+            username=safe_str(row.get('username')),
+            real_name=safe_str(row.get('real_name')),
+            email=safe_str(row.get('email')),
+            phone=safe_str(row.get('phone')),
+            role_id=safe_int(row.get('role_id')),
+            status=safe_int(row.get('status'), 1)
+        )
+        pwd = safe_str(row.get('password'), '123456')
+        user.set_password(pwd)
+        user.save()
+        return True, None
+
+    importer = ExcelImporter(file, validators=validators)
+    result = importer.run(process_func)
+
+    OperationLog(
+        user_id=current_user.id, username=current_user.username,
+        action='import', module='user',
+        target_desc=f'批量导入用户: 成功{result["success"]}条, 失败{result["fail"]}条',
+        ip_address=request.remote_addr
+    ).save()
+
+    return jsonify(build_import_response(result))

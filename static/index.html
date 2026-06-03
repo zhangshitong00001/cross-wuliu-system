@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" id="htmlTag">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -587,13 +587,137 @@
             border-radius: 8px;
         }
 
+        /* ===== Toast通知 ===== */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .toast-notification {
+            min-width: 300px;
+            max-width: 420px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .toast-notification.toast-success { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
+        .toast-notification.toast-error { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+        .toast-notification.toast-warning { background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
+        .toast-notification.toast-info { background: #e0e7ff; color: #3730a3; border-left: 4px solid #4f46e5; }
+        .toast-notification .toast-close {
+            margin-left: auto;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+            background: none;
+            border: none;
+            font-size: 16px;
+        }
+        .toast-notification .toast-close:hover { opacity: 1; }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* ===== 加载动画 ===== */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+        .loading-spinner .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e2e8f0;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         /* ===== 响应式 ===== */
         @media (max-width: 768px) {
             .sidebar { width: 0; overflow: hidden; }
             .main-content { margin-left: 0; padding: 16px; }
             .login-card { width: 92%; padding: 32px 24px; }
             .stat-value { font-size: 22px; }
+            .stat-card { padding: 16px; }
+            .top-bar { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+            .page-title { font-size: 16px; }
+            .toast-container { left: 16px; right: 16px; top: 16px; }
+            .toast-notification { min-width: auto; width: 100%; }
+            .table-responsive { font-size: 13px; }
+            .search-bar { flex-wrap: wrap; }
+            .search-bar .input-group { max-width: 100% !important; }
+            .btn-group.btn-group-sm .btn { padding: 4px 8px; font-size: 11px; }
         }
+
+        /* ===== 暗色模式 ===== */
+        body.dark-mode {
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+        body.dark-mode .card,
+        body.dark-mode .stat-card,
+        body.dark-mode .module-card {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        body.dark-mode .card-header {
+            background: #1e293b;
+            border-bottom-color: #334155;
+            color: #e2e8f0;
+        }
+        body.dark-mode .top-bar {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: #334155;
+        }
+        body.dark-mode .page-title { color: #e2e8f0; }
+        body.dark-mode .table thead th { background: #1e293b; color: #94a3b8; border-bottom-color: #334155; }
+        body.dark-mode .table tbody td { border-bottom-color: #334155; color: #cbd5e1; }
+        body.dark-mode .table tbody tr:hover { background: #1e293b; }
+        body.dark-mode .search-bar .form-control,
+        body.dark-mode .login-card .form-control {
+            background: #1e293b;
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+        body.dark-mode .modal-content { background: #1e293b; color: #e2e8f0; }
+        body.dark-mode .modal-header { border-bottom-color: #334155; }
+        body.dark-mode .modal-footer { border-top-color: #334155; }
+        body.dark-mode .stat-value { color: #e2e8f0; }
+        body.dark-mode .stat-label { color: #94a3b8; }
+        body.dark-mode .user-name { color: #e2e8f0; }
+        body.dark-mode .user-info:hover { background: #334155; }
+        body.dark-mode .quick-action-btn { background: #1e293b; border-color: #334155; color: #cbd5e1; }
+        body.dark-mode .quick-action-btn:hover { border-color: var(--primary); }
+        body.dark-mode .btn-light { background: #334155; border-color: #475569; color: #e2e8f0; }
+        body.dark-mode .btn-light:hover { background: #475569; }
+        body.dark-mode .form-control, body.dark-mode .form-select {
+            background: #1e293b; border-color: #334155; color: #e2e8f0;
+        }
+        body.dark-mode .input-group-text { background: #1e293b; border-color: #334155; color: #94a3b8; }
+        body.dark-mode .page-link { background: #1e293b; color: #94a3b8; border-color: #334155; }
+        body.dark-mode .page-item:not(.active) .page-link:hover { background: #334155; color: #e2e8f0; }
     </style>
 </head>
 <body>
@@ -603,37 +727,42 @@
             <div class="login-card">
                 <div class="login-title">
                     <i class="fas fa-ship" style="font-size: 48px; color: #3b82f6; margin-bottom: 15px;"></i>
-                    <h2>跨境物流管理系统</h2>
-                    <p>Cross-Border Logistics Management System</p>
+                    <h2>{{ I18n.t('login.title') }}</h2>
+                    <p>{{ I18n.t('login.subtitle') }}</p>
+                </div>
+                <div class="text-end mb-3">
+                    <button class="btn btn-sm btn-outline-secondary" @click="switchLang" style="border-radius:20px;font-size:12px;">
+                        <i class="fas fa-language me-1"></i>{{ currentLang === 'zh' ? 'EN' : '中' }}
+                    </button>
                 </div>
                 <form @submit.prevent="handleLogin">
                     <div class="mb-3">
-                        <label class="form-label">用户名</label>
-                        <input type="text" class="form-control form-control-lg" v-model="loginForm.username" placeholder="请输入用户名" required autocomplete="username">
+                        <label class="form-label">{{ I18n.t('login.username') }}</label>
+                        <input type="text" class="form-control form-control-lg" v-model="loginForm.username" :placeholder="I18n.t('login.username.placeholder')" required autocomplete="username">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">密码</label>
-                        <input type="password" class="form-control form-control-lg" v-model="loginForm.password" placeholder="请输入密码" required autocomplete="current-password">
+                        <label class="form-label">{{ I18n.t('login.password') }}</label>
+                        <input type="password" class="form-control form-control-lg" v-model="loginForm.password" :placeholder="I18n.t('login.password.placeholder')" required autocomplete="current-password">
                     </div>
                     <!-- 验证码 -->
                     <div class="mb-3" v-if="needCaptcha">
-                        <label class="form-label">验证码</label>
+                        <label class="form-label">{{ I18n.t('login.captcha') }}</label>
                         <div class="d-flex gap-2 align-items-center">
-                            <input type="text" class="form-control form-control-lg" v-model="captchaCode" placeholder="请输入验证码" maxlength="4" style="flex:1;" required>
-                            <img :src="captchaImage" @click="loadCaptcha" style="cursor:pointer;border-radius:8px;height:44px;" title="点击刷新验证码">
+                            <input type="text" class="form-control form-control-lg" v-model="captchaCode" :placeholder="I18n.t('login.captcha.placeholder')" maxlength="4" style="flex:1;" required>
+                            <img :src="captchaImage" @click="loadCaptcha" style="cursor:pointer;border-radius:8px;height:44px;" :title="I18n.t('login.captcha.refresh')">
                         </div>
                     </div>
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" v-model="loginForm.remember">
-                        <label class="form-check-label">记住我</label>
+                        <label class="form-check-label">{{ I18n.t('login.remember') }}</label>
                     </div>
                     <div class="alert alert-danger" v-if="loginError">
                         <i class="fas fa-exclamation-circle me-1"></i> {{ loginError }}
-                        <span v-if="needCaptcha" class="d-block mt-1" style="font-size:12px;">登录失败次数过多，请输入验证码后重试</span>
+                        <span v-if="needCaptcha" class="d-block mt-1" style="font-size:12px;">{{ I18n.t('login.fail.captcha') }}</span>
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg w-100" :disabled="loginLoading">
                         <span v-if="loginLoading" class="spinner-border spinner-border-sm me-2"></span>
-                        <span v-else><i class="fas fa-sign-in-alt me-2"></i>登 录</span>
+                        <span v-else><i class="fas fa-sign-in-alt me-2"></i>{{ I18n.t('login.btn') }}</span>
                     </button>
                 </form>
             </div>
@@ -646,114 +775,133 @@
                 <div class="sidebar-brand">
                     <div class="brand-icon"><i class="fas fa-ship"></i></div>
                     <div>
-                        <div class="brand-text">跨境物流系统</div>
-                        <div class="brand-sub">Cross-Border Logistics</div>
+                        <div class="brand-text">{{ I18n.t('app.title.short') }}</div>
+                        <div class="brand-sub">{{ I18n.t('app.title.short.en') }}</div>
                     </div>
                 </div>
                 <div class="sidebar-menu">
-                    <div class="menu-section-label">概览</div>
+                    <div class="menu-section-label">{{ I18n.t('menu.overview') }}</div>
                     <a class="menu-item" :class="{active: currentPage === 'dashboard'}" @click="navigate('dashboard')">
-                        <i class="fas fa-chart-pie"></i> 仪表盘
+                        <i class="fas fa-chart-pie"></i> {{ I18n.t('menu.dashboard') }}
                     </a>
 
-                    <div class="menu-section-label">仓储物流</div>
+                    <div class="menu-section-label">{{ I18n.t('menu.warehouse') }}</div>
                     <div class="menu-item" @click="toggleSubmenu('warehouse')">
-                        <i class="fas fa-warehouse"></i> 云仓集货管理
+                        <i class="fas fa-warehouse"></i> {{ I18n.t('menu.warehouse.title') }}
                         <i class="fas fa-chevron-down ms-auto" style="font-size: 11px; opacity:0.5;"></i>
                     </div>
                     <div class="menu-sub" :class="{show: openSubmenus.warehouse}">
-                        <a class="menu-item" :class="{active: currentPage === 'warehouse-receipt'}" @click="navigate('warehouse-receipt')">收货登记</a>
-                        <a class="menu-item" :class="{active: currentPage === 'warehouse-inventory'}" @click="navigate('warehouse-inventory')">库存管理</a>
-                        <a class="menu-item" :class="{active: currentPage === 'warehouse-batch'}" @click="navigate('warehouse-batch')">批次管理</a>
+                        <a class="menu-item" :class="{active: currentPage === 'warehouse-receipt'}" @click="navigate('warehouse-receipt')">{{ I18n.t('menu.warehouse.receipt') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'warehouse-inventory'}" @click="navigate('warehouse-inventory')">{{ I18n.t('menu.warehouse.inventory') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'warehouse-batch'}" @click="navigate('warehouse-batch')">{{ I18n.t('menu.warehouse.batch') }}</a>
                     </div>
 
                     <div class="menu-item" @click="toggleSubmenu('sorting')">
-                        <i class="fas fa-sort-amount-up"></i> 分装管理
+                        <i class="fas fa-sort-amount-up"></i> {{ I18n.t('menu.sorting.title') }}
                         <i class="fas fa-chevron-down ms-auto" style="font-size: 11px; opacity:0.5;"></i>
                     </div>
                     <div class="menu-sub" :class="{show: openSubmenus.sorting}">
-                        <a class="menu-item" :class="{active: currentPage === 'sorting-points'}" @click="navigate('sorting-points')">收件点管理</a>
-                        <a class="menu-item" :class="{active: currentPage === 'sorting-tasks'}" @click="navigate('sorting-tasks')">分装任务</a>
+                        <a class="menu-item" :class="{active: currentPage === 'sorting-points'}" @click="navigate('sorting-points')">{{ I18n.t('menu.sorting.points') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'sorting-tasks'}" @click="navigate('sorting-tasks')">{{ I18n.t('menu.sorting.tasks') }}</a>
                     </div>
 
                     <a class="menu-item" :class="{active: currentPage === 'documents'}" @click="navigate('documents')">
-                        <i class="fas fa-file-alt"></i> 文件生成管理
+                        <i class="fas fa-file-alt"></i> {{ I18n.t('menu.documents') }}
                     </a>
 
-                    <div class="menu-section-label">运输关务</div>
+                    <div class="menu-section-label">{{ I18n.t('menu.transport') }}</div>
                     <div class="menu-item" @click="toggleSubmenu('transport')">
-                        <i class="fas fa-truck"></i> 装车运输管理
+                        <i class="fas fa-truck"></i> {{ I18n.t('menu.transport.title') }}
                         <i class="fas fa-chevron-down ms-auto" style="font-size: 11px; opacity:0.5;"></i>
                     </div>
                     <div class="menu-sub" :class="{show: openSubmenus.transport}">
-                        <a class="menu-item" :class="{active: currentPage === 'transport-tasks'}" @click="navigate('transport-tasks')">运输任务</a>
-                        <a class="menu-item" :class="{active: currentPage === 'transport-vehicles'}" @click="navigate('transport-vehicles')">车辆管理</a>
+                        <a class="menu-item" :class="{active: currentPage === 'transport-tasks'}" @click="navigate('transport-tasks')">{{ I18n.t('menu.transport.tasks') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'transport-vehicles'}" @click="navigate('transport-vehicles')">{{ I18n.t('menu.transport.vehicles') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'transport-drivers'}" @click="navigate('transport-drivers')">{{ I18n.t('menu.transport.drivers') }}</a>
                     </div>
 
                     <a class="menu-item" :class="{active: currentPage === 'customs'}" @click="navigate('customs')">
-                        <i class="fas fa-passport"></i> 出口报关管理
+                        <i class="fas fa-passport"></i> {{ I18n.t('menu.customs') }}
                     </a>
                     <a class="menu-item" :class="{active: currentPage === 'clearance'}" @click="navigate('clearance')">
-                        <i class="fas fa-clipboard-check"></i> 进口清关管理
+                        <i class="fas fa-clipboard-check"></i> {{ I18n.t('menu.clearance') }}
                     </a>
                     <a class="menu-item" :class="{active: currentPage === 'port-transport'}" @click="navigate('port-transport')">
-                        <i class="fas fa-road"></i> 口岸运输管理
+                        <i class="fas fa-road"></i> {{ I18n.t('menu.portTransport') }}
                     </a>
                     <a class="menu-item" :class="{active: currentPage === 'distribution'}" @click="navigate('distribution')">
-                        <i class="fas fa-truck-fast"></i> 收件点配送管理
+                        <i class="fas fa-truck-fast"></i> {{ I18n.t('menu.distribution') }}
                     </a>
                     <a class="menu-item" :class="{active: currentPage === 'sign'}" @click="navigate('sign')">
-                        <i class="fas fa-signature"></i> 签收入库管理
+                        <i class="fas fa-signature"></i> {{ I18n.t('menu.sign') }}
                     </a>
 
-                    <div class="menu-section-label">财务结算</div>
+                    <div class="menu-section-label">{{ I18n.t('menu.finance') }}</div>
                     <div class="menu-item" @click="toggleSubmenu('finance')">
-                        <i class="fas fa-coins"></i> 财务结算
+                        <i class="fas fa-coins"></i> {{ I18n.t('menu.finance.title') }}
                         <i class="fas fa-chevron-down ms-auto" style="font-size: 11px; opacity:0.5;"></i>
                     </div>
                     <div class="menu-sub" :class="{show: openSubmenus.finance}">
-                        <a class="menu-item" :class="{active: currentPage === 'reconciliation'}" @click="navigate('reconciliation')">对账管理</a>
-                        <a class="menu-item" :class="{active: currentPage === 'settlement'}" @click="navigate('settlement')">资金结算</a>
-                        <a class="menu-item" :class="{active: currentPage === 'payment'}" @click="navigate('payment')">支付开票</a>
+                        <a class="menu-item" :class="{active: currentPage === 'reconciliation'}" @click="navigate('reconciliation')">{{ I18n.t('menu.finance.reconciliation') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'settlement'}" @click="navigate('settlement')">{{ I18n.t('menu.finance.settlement') }}</a>
+                        <a class="menu-item" :class="{active: currentPage === 'payment'}" @click="navigate('payment')">{{ I18n.t('menu.finance.payment') }}</a>
                     </div>
 
-                    <div class="menu-section-label">系统管理</div>
+                    <div class="menu-section-label">{{ I18n.t('menu.system') }}</div>
                     <a class="menu-item" :class="{active: currentPage === 'tracking'}" @click="navigate('tracking')">
-                        <i class="fas fa-search-location"></i> 物流跟踪
+                        <i class="fas fa-search-location"></i> {{ I18n.t('menu.tracking') }}
                     </a>
                     <a class="menu-item" :class="{active: currentPage === 'alerts'}" @click="navigate('alerts')">
-                        <i class="fas fa-bell"></i> 异常预警
+                        <i class="fas fa-bell"></i> {{ I18n.t('menu.alerts') }}
                         <span class="menu-badge" v-if="alertCount > 0">{{ alertCount }}</span>
                     </a>
                     <a class="menu-item" :class="{active: currentPage === 'charging'}" @click="navigate('charging')">
-                        <i class="fas fa-calculator"></i> 计费规则
+                        <i class="fas fa-calculator"></i> {{ I18n.t('menu.charging') }}
                     </a>
                     <a class="menu-item" :class="{active: currentPage === 'users'}" @click="navigate('users')">
-                        <i class="fas fa-users-cog"></i> 用户管理
+                        <i class="fas fa-users-cog"></i> {{ I18n.t('menu.users') }}
                     </a>
                     <a class="menu-item" :class="{active: currentPage === 'logs'}" @click="navigate('logs')">
-                        <i class="fas fa-history"></i> 操作日志
+                        <i class="fas fa-history"></i> {{ I18n.t('menu.logs') }}
                     </a>
+                    <!-- 侧边栏底部折叠按钮 -->
+                    <div style="padding:12px 20px;border-top:1px solid rgba(255,255,255,0.06);margin-top:auto;">
+                        <button class="menu-item d-none d-md-flex" @click="toggleSidebar" style="width:100%;border:none;background:none;cursor:pointer;">
+                            <i class="fas fa-chevron-left" :style="{transform: sidebarCollapsed ? 'rotate(180deg)' : ''}"></i>
+                            <span>{{ sidebarCollapsed ? I18n.t('menu.expand') : I18n.t('menu.collapse') }}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- ===== 主内容 ===== -->
             <div class="main-content">
+                <!-- Toast通知容器 -->
+                <div class="toast-container" id="toastContainer"></div>
                 <!-- 顶部栏 -->
                 <div class="top-bar">
                     <div class="page-title">
+                        <button class="btn btn-sm d-md-none me-2" @click="toggleSidebar" style="border-radius:8px;border:1px solid #e2e8f0;">
+                            <i class="fas fa-bars"></i>
+                        </button>
                         <span class="title-dot"></span>
                         {{ pageTitle }}
                     </div>
                     <div class="top-bar-right">
+                        <button class="btn btn-outline-secondary btn-sm" @click="toggleDarkMode" :title="I18n.t('topbar.darkMode')" style="border-radius:20px;">
+                            <i :class="isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" @click="switchLang" :title="I18n.t('topbar.switchLang')" style="border-radius:20px;">
+                            <i class="fas fa-language me-1"></i>{{ currentLang === 'zh' ? 'EN' : '中' }}
+                        </button>
                         <div class="user-info" @click="navigate('users')">
                             <div class="user-avatar">{{ (currentUser.real_name || currentUser.username).charAt(0) }}</div>
                             <div>
                                 <div class="user-name">{{ currentUser.real_name || currentUser.username }}</div>
-                                <div class="user-role">{{ currentUser.role_name || '管理员' }}</div>
+                                <div class="user-role">{{ currentUser.role_name || I18n.t('menu.users') }}</div>
                             </div>
                         </div>
-                        <button class="btn btn-outline-primary btn-sm" @click="handleLogout" title="退出登录">
+                        <button class="btn btn-outline-primary btn-sm" @click="handleLogout" :title="I18n.t('topbar.logout')">
                             <i class="fas fa-sign-out-alt"></i>
                         </button>
                     </div>
@@ -780,7 +928,7 @@
                         <div class="col-lg-8">
                             <div class="card">
                                 <div class="card-header">
-                                    <span><i class="fas fa-th-large me-2" style="color: var(--primary);"></i>系统功能模块</span>
+                                    <span><i class="fas fa-th-large me-2" style="color: var(--primary);"></i>{{ I18n.t('dashboard.modules') }}</span>
                                 </div>
                                 <div class="card-body">
                                     <div class="row g-3">
@@ -801,42 +949,42 @@
                         <div class="col-lg-4">
                             <div class="card">
                                 <div class="card-header">
-                                    <span><i class="fas fa-bolt me-2" style="color: var(--warning);"></i>快捷操作</span>
+                                    <span><i class="fas fa-bolt me-2" style="color: var(--warning);"></i>{{ I18n.t('dashboard.quickActions') }}</span>
                                 </div>
                                 <div class="card-body">
                                     <div class="d-grid gap-3">
                                         <button class="quick-action-btn text-start" @click="navigate('warehouse-receipt')">
-                                            <i class="fas fa-plus-circle me-2" style="color: var(--primary);"></i> 新建收货登记
+                                            <i class="fas fa-plus-circle me-2" style="color: var(--primary);"></i> {{ I18n.t('dashboard.quick.newReceipt') }}
                                         </button>
                                         <button class="quick-action-btn text-start" @click="navigate('transport-tasks')">
-                                            <i class="fas fa-truck me-2" style="color: var(--success);"></i> 新建运输任务
+                                            <i class="fas fa-truck me-2" style="color: var(--success);"></i> {{ I18n.t('dashboard.quick.newTransport') }}
                                         </button>
                                         <button class="quick-action-btn text-start" @click="navigate('documents')">
-                                            <i class="fas fa-file-export me-2" style="color: var(--secondary);"></i> 生成报关文件
+                                            <i class="fas fa-file-export me-2" style="color: var(--secondary);"></i> {{ I18n.t('dashboard.quick.genDoc') }}
                                         </button>
                                         <button class="quick-action-btn text-start" @click="navigate('sorting-points')">
-                                            <i class="fas fa-map-marker-alt me-2" style="color: var(--danger);"></i> 管理收件点
+                                            <i class="fas fa-map-marker-alt me-2" style="color: var(--danger);"></i> {{ I18n.t('dashboard.quick.managePoints') }}
                                         </button>
                                     </div>
                                 </div>
                             </div>
                             <div class="card">
                                 <div class="card-header">
-                                    <span><i class="fas fa-info-circle me-2" style="color: var(--info);"></i>系统信息</span>
+                                    <span><i class="fas fa-info-circle me-2" style="color: var(--info);"></i>{{ I18n.t('dashboard.systemInfo') }}</span>
                                 </div>
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between mb-2">
-                                        <span style="color:#64748b;font-size:13px;">运行状态</span>
+                                        <span style="color:#64748b;font-size:13px;">{{ I18n.t('dashboard.sys.status') }}</span>
                                         <span class="badge" style="background:#d1fae5!important;color:#065f46!important;">
-                                            <i class="fas fa-circle me-1" style="font-size:8px;"></i> 正常
+                                            <i class="fas fa-circle me-1" style="font-size:8px;"></i> {{ I18n.t('dashboard.sys.normal') }}
                                         </span>
                                     </div>
                                     <div class="d-flex justify-content-between mb-2">
-                                        <span style="color:#64748b;font-size:13px;">数据库</span>
+                                        <span style="color:#64748b;font-size:13px;">{{ I18n.t('dashboard.sys.database') }}</span>
                                         <span style="font-size:13px;font-weight:500;">PostgreSQL</span>
                                     </div>
                                     <div class="d-flex justify-content-between">
-                                        <span style="color:#64748b;font-size:13px;">版本</span>
+                                        <span style="color:#64748b;font-size:13px;">{{ I18n.t('dashboard.sys.version') }}</span>
                                         <span style="font-size:13px;font-weight:500;">v1.0.0</span>
                                     </div>
                                 </div>
@@ -850,9 +998,17 @@
                     <div class="card">
                         <div class="card-header">
                             <span><i class="fas fa-list me-2" style="color: var(--primary);"></i>{{ pageTitle }}</span>
-                            <button class="btn btn-primary btn-sm" @click="openAddForm" v-if="addFormFields.length > 0">
-                                <i class="fas fa-plus"></i> 新增
-                            </button>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-success btn-sm" @click="openImportDialog" v-if="addFormFields.length > 0" :title="I18n.t('common.import')">
+                                    <i class="fas fa-file-import"></i>
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm" @click="exportData" v-if="tableData.length > 0" :title="I18n.t('common.export')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="btn btn-primary btn-sm" @click="openAddForm" v-if="addFormFields.length > 0">
+                                    <i class="fas fa-plus"></i> {{ I18n.t('common.add') }}
+                                </button>
+                            </div>
                         </div>
                         <div class="card-body">
                             <!-- 搜索栏 -->
@@ -861,20 +1017,23 @@
                                     <span class="input-group-text" style="background:#f8fafc;border:2px solid #e2e8f0;border-right:none;border-radius:10px 0 0 10px;">
                                         <i class="fas fa-search" style="color:#94a3b8;"></i>
                                     </span>
-                                    <input type="text" class="form-control" v-model="searchKeyword" placeholder="搜索关键字..." @keyup.enter="loadData" style="border-left:none;">
+                                    <input type="text" class="form-control" v-model="searchKeyword" :placeholder="I18n.t('common.search.placeholder')" @keyup.enter="loadData" style="border-left:none;">
                                 </div>
-                                <button class="btn btn-primary" @click="loadData"><i class="fas fa-search me-1"></i> 搜索</button>
+                                <button class="btn btn-primary" @click="loadData"><i class="fas fa-search me-1"></i> {{ I18n.t('common.search') }}</button>
                                 <button class="btn btn-outline-secondary" @click="searchKeyword='';loadData()" v-if="searchKeyword">
-                                    <i class="fas fa-times"></i> 清除
+                                    <i class="fas fa-times"></i> {{ I18n.t('common.clear') }}
                                 </button>
                             </div>
                             <!-- 表格 -->
                             <div class="table-responsive">
-                                <table class="table table-hover align-middle">
+                                <div class="loading-spinner" v-if="tableLoading">
+                                    <div class="spinner"></div>
+                                </div>
+                                <table class="table table-hover align-middle" v-else>
                                     <thead>
                                         <tr>
                                             <th v-for="col in tableColumns" :key="col.key">{{ col.label }}</th>
-                                            <th style="width:140px;">操作</th>
+                                            <th style="width:140px;">{{ I18n.t('common.operation') }}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -886,13 +1045,16 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group btn-group-sm">
-                                                    <button class="btn btn-outline-primary" @click="viewDetail(item)" title="查看详情">
+                                                    <button class="btn btn-outline-primary" @click="viewDetail(item)" :title="I18n.t('common.detail')">
                                                         <i class="fas fa-eye"></i>
                                                     </button>
-                                                    <button class="btn btn-outline-info" @click="openEditForm(item)" v-if="addFormFields.length > 0" title="编辑">
+                                                    <button class="btn btn-outline-success" @click="customAction(item)" v-if="getCustomAction(item)" :title="getCustomAction(item).title">
+                                                        <i :class="getCustomAction(item).icon"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-info" @click="openEditForm(item)" v-if="addFormFields.length > 0" :title="I18n.t('common.edit')">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
-                                                    <button class="btn btn-outline-danger" @click="deleteItem(item)" v-if="currentPage !== 'logs'" title="删除">
+                                                    <button class="btn btn-outline-danger" @click="deleteItem(item)" v-if="currentPage !== 'logs'" :title="I18n.t('common.delete')">
                                                         <i class="fas fa-trash-alt"></i>
                                                     </button>
                                                 </div>
@@ -901,7 +1063,7 @@
                                         <tr v-if="tableData.length === 0">
                                             <td :colspan="tableColumns.length + 1" class="text-center py-5">
                                                 <i class="fas fa-inbox" style="font-size: 40px; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
-                                                <span style="color: #94a3b8;">暂无数据</span>
+                                                <span style="color: #94a3b8;">{{ I18n.t('common.noData') }}</span>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -930,7 +1092,7 @@
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content" style="border:none;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
                             <div class="modal-header" style="border-bottom:1px solid #f1f5f9;padding:20px 24px;">
-                                <h5 class="modal-title fw-bold"><i class="fas fa-plus-circle me-2" style="color:var(--primary);"></i>新增{{ pageTitle }}</h5>
+                                <h5 class="modal-title fw-bold"><i class="fas fa-plus-circle me-2" style="color:var(--primary);"></i>{{ I18n.t('common.new', {title: pageTitle}) }}</h5>
                                 <button type="button" class="btn-close" @click="showAddForm=false"></button>
                             </div>
                             <div class="modal-body" style="padding:24px;">
@@ -938,14 +1100,14 @@
                                     <label class="form-label fw-medium">{{ field.label }} <span v-if="field.required" style="color:var(--danger);">*</span></label>
                                     <input v-if="field.type === 'text' || field.type === 'email' || field.type === 'password' || field.type === 'number'"
                                            :type="field.type" class="form-control" v-model="addFormData[field.key]"
-                                           :required="field.required" :placeholder="'请输入' + field.label"
+                                           :required="field.required" :placeholder="I18n.t('common.pleaseInput', {field: field.label})"
                                            style="border:2px solid #e2e8f0;border-radius:10px;padding:10px 14px;">
                                     <input v-else-if="field.type === 'datetime-local'"
                                            type="datetime-local" class="form-control" v-model="addFormData[field.key]"
                                            style="border:2px solid #e2e8f0;border-radius:10px;padding:10px 14px;">
                                     <select v-else-if="field.type === 'select'" class="form-select" v-model="addFormData[field.key]"
                                             style="border:2px solid #e2e8f0;border-radius:10px;padding:10px 14px;">
-                                        <option value="">请选择</option>
+                                        <option value="">{{ I18n.t('common.pleaseSelect') }}</option>
                                         <option v-for="opt in field.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                                     </select>
                                     <textarea v-else-if="field.type === 'textarea'" class="form-control" v-model="addFormData[field.key]" rows="3"
@@ -953,9 +1115,9 @@
                                 </div>
                             </div>
                             <div class="modal-footer" style="border-top:1px solid #f1f5f9;padding:16px 24px;">
-                                <button class="btn btn-light" @click="showAddForm=false" style="border-radius:10px;padding:10px 24px;">取消</button>
+                                <button class="btn btn-light" @click="showAddForm=false" style="border-radius:10px;padding:10px 24px;">{{ I18n.t('common.cancel') }}</button>
                                 <button class="btn btn-primary" @click="submitAddForm" style="border-radius:10px;padding:10px 24px;">
-                                    <i class="fas fa-check me-1"></i> 确认新增
+                                    <i class="fas fa-check me-1"></i> {{ I18n.t('common.confirmAdd') }}
                                 </button>
                             </div>
                         </div>
@@ -967,7 +1129,7 @@
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content" style="border:none;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
                             <div class="modal-header" style="border-bottom:1px solid #f1f5f9;padding:20px 24px;">
-                                <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2" style="color:var(--warning);"></i>编辑{{ pageTitle }}</h5>
+                                <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2" style="color:var(--warning);"></i>{{ I18n.t('common.edit.title', {title: pageTitle}) }}</h5>
                                 <button type="button" class="btn-close" @click="showEditForm=false"></button>
                             </div>
                             <div class="modal-body" style="padding:24px;">
@@ -981,7 +1143,7 @@
                                            style="border:2px solid #e2e8f0;border-radius:10px;padding:10px 14px;">
                                     <select v-else-if="field.type === 'select'" class="form-select" v-model="addFormData[field.key]"
                                             style="border:2px solid #e2e8f0;border-radius:10px;padding:10px 14px;">
-                                        <option value="">请选择</option>
+                                        <option value="">{{ I18n.t('common.pleaseSelect') }}</option>
                                         <option v-for="opt in field.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
                                     </select>
                                     <textarea v-else-if="field.type === 'textarea'" class="form-control" v-model="addFormData[field.key]" rows="3"
@@ -989,9 +1151,73 @@
                                 </div>
                             </div>
                             <div class="modal-footer" style="border-top:1px solid #f1f5f9;padding:16px 24px;">
-                                <button class="btn btn-light" @click="showEditForm=false" style="border-radius:10px;padding:10px 24px;">取消</button>
+                                <button class="btn btn-light" @click="showEditForm=false" style="border-radius:10px;padding:10px 24px;">{{ I18n.t('common.cancel') }}</button>
                                 <button class="btn btn-warning" @click="submitEditForm" style="border-radius:10px;padding:10px 24px;color:#fff;">
-                                    <i class="fas fa-save me-1"></i> 保存修改
+                                    <i class="fas fa-save me-1"></i> {{ I18n.t('common.save') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== 导入弹窗 ===== -->
+                <div class="modal fade" :class="{show: showImportDialog}" :style="{display: showImportDialog ? 'block' : 'none'}" @click.self="showImportDialog=false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content" style="border:none;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+                            <div class="modal-header" style="border-bottom:1px solid #f1f5f9;padding:20px 24px;">
+                                <h5 class="modal-title fw-bold"><i class="fas fa-file-import me-2" style="color:var(--success);"></i>{{ I18n.t('common.import.title', {title: pageTitle}) }}</h5>
+                                <button type="button" class="btn-close" @click="showImportDialog=false"></button>
+                            </div>
+                            <div class="modal-body" style="padding:24px;">
+                                <div class="text-center mb-4" v-if="!importResult">
+                                    <div style="border:2px dashed #e2e8f0;border-radius:16px;padding:40px 20px;cursor:pointer;transition:all 0.3s;"
+                                         @click="$refs.importFileInput.click()"
+                                         @dragover.prevent="$event.currentTarget.style.borderColor='var(--success)'"
+                                         @dragleave.prevent="$event.currentTarget.style.borderColor='#e2e8f0'"
+                                         @drop.prevent="handleFileDrop">
+                                        <i class="fas fa-cloud-upload-alt" style="font-size:48px;color:var(--success);margin-bottom:16px;display:block;"></i>
+                                        <div style="font-weight:600;color:#0f172a;font-size:16px;margin-bottom:8px;">{{ I18n.t('common.import.clickOrDrag') }}</div>
+                                        <div style="color:#94a3b8;font-size:13px;">{{ I18n.t('common.import.accept') }}</div>
+                                        <div v-if="importFileName" class="mt-3" style="background:#f0fdf4;border-radius:10px;padding:10px 16px;display:inline-block;">
+                                            <i class="fas fa-file-excel me-2" style="color:#22c55e;"></i>
+                                            <span style="font-weight:500;">{{ importFileName }}</span>
+                                        </div>
+                                    </div>
+                                    <input type="file" ref="importFileInput" accept=".xlsx,.xls" @change="onImportFileChange" style="display:none;">
+                                    <div class="mt-3">
+                                        <a href="#" @click.prevent="downloadImportTemplate" style="color:var(--primary);font-size:13px;text-decoration:none;">
+                                            <i class="fas fa-download me-1"></i> {{ I18n.t('common.import.downloadTemplate') }}
+                                        </a>
+                                    </div>
+                                </div>
+                                <!-- 导入结果 -->
+                                <div v-if="importResult" style="text-align:center;">
+                                    <div v-if="importResult.fail === 0" style="color:#10b981;">
+                                        <i class="fas fa-check-circle" style="font-size:48px;margin-bottom:12px;display:block;"></i>
+                                        <div style="font-weight:600;font-size:16px;">{{ importResult.message }}</div>
+                                    </div>
+                                    <div v-else>
+                                        <i class="fas fa-exclamation-triangle" style="font-size:48px;color:#f59e0b;margin-bottom:12px;display:block;"></i>
+                                        <div style="font-weight:600;font-size:16px;">{{ importResult.message }}</div>
+                                        <div class="mt-3 text-start" style="max-height:200px;overflow-y:auto;background:#fef2f2;border-radius:10px;padding:12px;">
+                                            <div v-for="err in importResult.errors" :key="err.row + err.field" style="font-size:13px;color:#991b1b;padding:4px 0;border-bottom:1px solid #fee2e2;">
+                                                <i class="fas fa-times-circle me-1"></i> 第{{ err.row }}行: {{ err.message }}
+                                            </div>
+                                            <div v-if="importResult.has_more_errors" style="font-size:13px;color:#64748b;padding:8px 0;text-align:center;">
+                                                ... 还有更多错误未显示
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer" style="border-top:1px solid #f1f5f9;padding:16px 24px;">
+                                <button class="btn btn-light" @click="resetImportDialog" style="border-radius:10px;padding:10px 24px;">
+                                    {{ importResult ? I18n.t('common.close') : I18n.t('common.cancel') }}
+                                </button>
+                                <button v-if="!importResult && importFileName" class="btn btn-success" @click="submitImport" :disabled="importLoading" style="border-radius:10px;padding:10px 24px;">
+                                    <span v-if="importLoading" class="spinner-border spinner-border-sm me-2"></span>
+                                    <i v-else class="fas fa-upload me-1"></i>
+                                    {{ I18n.t('common.import.upload') }}
                                 </button>
                             </div>
                         </div>
@@ -1003,7 +1229,7 @@
                     <div class="modal-dialog modal-dialog-centered modal-lg">
                         <div class="modal-content" style="border:none;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
                             <div class="modal-header" style="border-bottom:1px solid #f1f5f9;padding:20px 24px;">
-                                <h5 class="modal-title fw-bold"><i class="fas fa-info-circle me-2" style="color:var(--info);"></i>{{ pageTitle }} - 详情</h5>
+                                <h5 class="modal-title fw-bold"><i class="fas fa-info-circle me-2" style="color:var(--info);"></i>{{ I18n.t('common.detail.title', {title: pageTitle}) }}</h5>
                                 <button type="button" class="btn-close" @click="showDetailModal=false"></button>
                             </div>
                             <div class="modal-body" style="padding:24px;">
@@ -1021,7 +1247,7 @@
                                 </div>
                             </div>
                             <div class="modal-footer" style="border-top:1px solid #f1f5f9;padding:16px 24px;">
-                                <button class="btn btn-light" @click="showDetailModal=false" style="border-radius:10px;padding:10px 24px;">关闭</button>
+                                <button class="btn btn-light" @click="showDetailModal=false" style="border-radius:10px;padding:10px 24px;">{{ I18n.t('common.close') }}</button>
                             </div>
                         </div>
                     </div>
@@ -1033,23 +1259,108 @@
         </div>
     </div>
 
-    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.3.4/vue.global.prod.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/axios/1.5.0/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.prod.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.0/axios.min.js"></script>
+    <script src="static/js/i18n.js"></script>
     <script>
         const { createApp, ref, reactive, computed, watch } = Vue;
 
         const app = createApp({
             setup() {
+                // ===== 国际化 =====
+                const currentLang = ref(I18n.getLang());
+
+                // 监听语言变化事件
+                window.addEventListener('languageChanged', (e) => {
+                    currentLang.value = e.detail.lang;
+                    // 更新页面标题
+                    document.title = I18n.t('app.title');
+                    // 刷新当前页面标题
+                    updatePageTitle();
+                    // 刷新模块名称
+                    updateModules();
+                    // 刷新仪表盘统计
+                    if (currentPage.value === 'dashboard') {
+                        loadDashboard();
+                    }
+                });
+
+                function switchLang() {
+                    I18n.toggleLang();
+                    currentLang.value = I18n.getLang();
+                    document.title = I18n.t('app.title');
+                    updatePageTitle();
+                    updateModules();
+                    if (currentPage.value === 'dashboard') {
+                        loadDashboard();
+                    } else {
+                        // 刷新表格列标题
+                        const config = pageConfigs[currentPage.value];
+                        if (config) {
+                            tableColumns.value = getTranslatedColumns(config.columns);
+                            // 刷新表单字段标签
+                            addFormFields.value = (config.formFields || []).map(f => {
+                                const field = {...f};
+                                field.label = I18n.t(f.labelKey || 'field.' + f.key);
+                                if (field.options) {
+                                    field.options = field.options.map(opt => ({
+                                        ...opt,
+                                        label: I18n.t(opt.labelKey || 'option.' + opt.value)
+                                    }));
+                                }
+                                return field;
+                            });
+                        }
+                    }
+                }
+
+                function updatePageTitle() {
+                    const config = pageConfigs[currentPage.value];
+                    if (config) {
+                        pageTitle.value = I18n.t(config.titleKey || 'page.' + currentPage.value);
+                    } else if (currentPage.value === 'dashboard') {
+                        pageTitle.value = I18n.t('dashboard.title');
+                    }
+                }
+
+                function updateModules() {
+                    modules.value = [
+                        {name: I18n.t('menu.warehouse.title'), icon: 'fas fa-warehouse', page: 'warehouse-receipt', bg: '#e0e7ff', color: '#4f46e5'},
+                        {name: I18n.t('menu.sorting.title'), icon: 'fas fa-sort-amount-up', page: 'sorting-tasks', bg: '#d1fae5', color: '#059669'},
+                        {name: I18n.t('menu.documents'), icon: 'fas fa-file-alt', page: 'documents', bg: '#fef3c7', color: '#d97706'},
+                        {name: I18n.t('menu.transport.title'), icon: 'fas fa-truck', page: 'transport-tasks', bg: '#cffafe', color: '#0891b2'},
+                        {name: I18n.t('menu.customs'), icon: 'fas fa-passport', page: 'customs', bg: '#fce7f3', color: '#db2777'},
+                        {name: I18n.t('menu.clearance'), icon: 'fas fa-clipboard-check', page: 'clearance', bg: '#ede9fe', color: '#7c3aed'},
+                        {name: I18n.t('menu.distribution'), icon: 'fas fa-truck-fast', page: 'distribution', bg: '#dbeafe', color: '#2563eb'},
+                        {name: I18n.t('menu.sign'), icon: 'fas fa-signature', page: 'sign', bg: '#d1fae5', color: '#16a34a'},
+                        {name: I18n.t('menu.finance.reconciliation'), icon: 'fas fa-coins', page: 'reconciliation', bg: '#fef3c7', color: '#f59e0b'},
+                        {name: I18n.t('menu.tracking'), icon: 'fas fa-search-location', page: 'tracking', bg: '#e0e7ff', color: '#6366f1'},
+                        {name: I18n.t('menu.alerts'), icon: 'fas fa-bell', page: 'alerts', bg: '#fee2e2', color: '#ef4444'},
+                        {name: I18n.t('menu.charging'), icon: 'fas fa-calculator', page: 'charging', bg: '#f3e8ff', color: '#a855f7'},
+                    ];
+                }
+
+                function getTranslatedColumns(columns) {
+                    return columns.map(col => ({
+                        ...col,
+                        label: I18n.t(col.labelKey || 'col.' + col.key)
+                    }));
+                }
+
                 // ===== 状态 =====
                 const isLoggedIn = ref(false);
+                // 调试 isLoggedIn
+                window.__isLoggedIn = isLoggedIn;
+                watch(isLoggedIn, (v) => console.log('[DEBUG] isLoggedIn:', v));
                 const currentUser = ref({});
                 const currentPage = ref('dashboard');
-                const pageTitle = ref('仪表盘');
+                const pageTitle = ref(I18n.t('dashboard.title'));
                 const loginLoading = ref(false);
                 const loginError = ref('');
                 const searchKeyword = ref('');
                 const tableData = ref([]);
                 const tableColumns = ref([]);
+                const tableLoading = ref(false);
                 const currentPageNum = ref(1);
                 const totalPages = ref(1);
                 const showAddForm = ref(false);
@@ -1071,20 +1382,9 @@
                 const captchaCodeId = ref('');
                 const captchaCode = ref('');
 
-                const modules = ref([
-                    {name: '云仓集货', icon: 'fas fa-warehouse', page: 'warehouse-receipt', bg: '#e0e7ff', color: '#4f46e5'},
-                    {name: '分装管理', icon: 'fas fa-sort-amount-up', page: 'sorting-tasks', bg: '#d1fae5', color: '#059669'},
-                    {name: '文件生成', icon: 'fas fa-file-alt', page: 'documents', bg: '#fef3c7', color: '#d97706'},
-                    {name: '装车运输', icon: 'fas fa-truck', page: 'transport-tasks', bg: '#cffafe', color: '#0891b2'},
-                    {name: '出口报关', icon: 'fas fa-passport', page: 'customs', bg: '#fce7f3', color: '#db2777'},
-                    {name: '进口清关', icon: 'fas fa-clipboard-check', page: 'clearance', bg: '#ede9fe', color: '#7c3aed'},
-                    {name: '配送管理', icon: 'fas fa-truck-fast', page: 'distribution', bg: '#dbeafe', color: '#2563eb'},
-                    {name: '签收入库', icon: 'fas fa-signature', page: 'sign', bg: '#d1fae5', color: '#16a34a'},
-                    {name: '对账结算', icon: 'fas fa-coins', page: 'reconciliation', bg: '#fef3c7', color: '#f59e0b'},
-                    {name: '物流跟踪', icon: 'fas fa-search-location', page: 'tracking', bg: '#e0e7ff', color: '#6366f1'},
-                    {name: '异常预警', icon: 'fas fa-bell', page: 'alerts', bg: '#fee2e2', color: '#ef4444'},
-                    {name: '计费规则', icon: 'fas fa-calculator', page: 'charging', bg: '#f3e8ff', color: '#a855f7'},
-                ]);
+                const modules = ref([]);
+                // 初始化模块
+                updateModules();
 
                 const loginForm = reactive({
                     username: '',
@@ -1095,308 +1395,321 @@
                 // ===== 页面配置 =====
                 const pageConfigs = {
                     'warehouse-receipt': {
-                        title: '收货登记', api: '/api/warehouse/receipts',
+                        titleKey: 'page.warehouse-receipt', api: '/api/warehouse/receipts',
                         columns: [
-                            {key: 'receipt_no', label: '收货单号'}, {key: 'product_name', label: '品名'},
-                            {key: 'sku', label: 'SKU'}, {key: 'quantity', label: '数量'},
-                            {key: 'weight', label: '重量(kg)'}, {key: 'status', label: '状态', type: 'status'},
-                            {key: 'created_at', label: '创建时间', type: 'datetime'}
+                            {key: 'receipt_no', labelKey: 'col.receipt_no'}, {key: 'product_name', labelKey: 'col.product_name'},
+                            {key: 'sku', labelKey: 'col.sku'}, {key: 'quantity', labelKey: 'col.quantity'},
+                            {key: 'weight', labelKey: 'col.weight'}, {key: 'status', labelKey: 'col.status', type: 'status'},
+                            {key: 'created_at', labelKey: 'col.created_at', type: 'datetime'}
                         ],
                         formFields: [
-                            {key: 'product_name', label: '品名', type: 'text', required: true},
-                            {key: 'sku', label: 'SKU', type: 'text'},
-                            {key: 'quantity', label: '数量', type: 'number', required: true},
-                            {key: 'weight', label: '重量(kg)', type: 'number'},
-                            {key: 'volume', label: '体积(m³)', type: 'number'},
-                            {key: 'batch_no', label: '批次号', type: 'text'},
-                            {key: 'order_no', label: '订单号', type: 'text'},
-                            {key: 'owner_name', label: '货主', type: 'text'},
+                            {key: 'product_name', labelKey: 'field.product_name', type: 'text', required: true},
+                            {key: 'sku', labelKey: 'field.sku', type: 'text'},
+                            {key: 'quantity', labelKey: 'field.quantity', type: 'number', required: true},
+                            {key: 'weight', labelKey: 'field.weight', type: 'number'},
+                            {key: 'volume', labelKey: 'field.volume', type: 'number'},
+                            {key: 'batch_no', labelKey: 'field.batch_no', type: 'text'},
+                            {key: 'order_no', labelKey: 'field.order_no', type: 'text'},
+                            {key: 'owner_name', labelKey: 'field.owner_name', type: 'text'},
                         ]
                     },
                     'warehouse-inventory': {
-                        title: '库存管理', api: '/api/warehouse/inventory',
+                        titleKey: 'page.warehouse-inventory', api: '/api/warehouse/inventory',
                         columns: [
-                            {key: 'product_name', label: '品名'}, {key: 'sku', label: 'SKU'},
-                            {key: 'total_quantity', label: '总库存'}, {key: 'available_quantity', label: '可用数量'},
-                            {key: 'status', label: '状态', type: 'status'}
+                            {key: 'product_name', labelKey: 'col.product_name'}, {key: 'sku', labelKey: 'col.sku'},
+                            {key: 'total_quantity', labelKey: 'col.total_quantity'}, {key: 'available_quantity', labelKey: 'col.available_quantity'},
+                            {key: 'status', labelKey: 'col.status', type: 'status'}
                         ]
                     },
                     'warehouse-batch': {
-                        title: '批次管理', api: '/api/warehouse/batches',
+                        titleKey: 'page.warehouse-batch', api: '/api/warehouse/batches',
                         columns: [
-                            {key: 'batch_no', label: '批次号'}, {key: 'product_name', label: '品名'},
-                            {key: 'quantity', label: '数量'}, {key: 'created_at', label: '创建时间', type: 'datetime'}
+                            {key: 'batch_no', labelKey: 'col.batch_no'}, {key: 'product_name', labelKey: 'col.product_name'},
+                            {key: 'quantity', labelKey: 'col.quantity'}, {key: 'created_at', labelKey: 'col.created_at', type: 'datetime'}
                         ],
                         formFields: [
-                            {key: 'batch_no', label: '批次号', type: 'text', required: true},
-                            {key: 'product_name', label: '品名', type: 'text'},
-                            {key: 'sku', label: 'SKU', type: 'text'},
-                            {key: 'quantity', label: '数量', type: 'number'},
-                            {key: 'weight', label: '重量(kg)', type: 'number'},
+                            {key: 'batch_no', labelKey: 'field.batch_no', type: 'text', required: true},
+                            {key: 'product_name', labelKey: 'field.product_name', type: 'text'},
+                            {key: 'sku', labelKey: 'field.sku', type: 'text'},
+                            {key: 'quantity', labelKey: 'field.quantity', type: 'number'},
+                            {key: 'weight', labelKey: 'field.weight', type: 'number'},
                         ]
                     },
                     'sorting-points': {
-                        title: '收件点管理', api: '/api/sorting/points',
+                        titleKey: 'page.sorting-points', api: '/api/sorting/points',
                         columns: [
-                            {key: 'point_code', label: '编码'}, {key: 'name', label: '名称'},
-                            {key: 'address', label: '地址'}, {key: 'contact_person', label: '联系人'},
-                            {key: 'contact_phone', label: '联系方式'}, {key: 'status', label: '状态', type: 'status'}
+                            {key: 'point_code', labelKey: 'col.point_code'}, {key: 'name', labelKey: 'col.name'},
+                            {key: 'address', labelKey: 'col.address'}, {key: 'contact_person', labelKey: 'col.contact_person'},
+                            {key: 'contact_phone', labelKey: 'col.contact_phone'}, {key: 'status', labelKey: 'col.status', type: 'status'}
                         ],
                         formFields: [
-                            {key: 'point_code', label: '编码', type: 'text', required: true},
-                            {key: 'name', label: '名称', type: 'text', required: true},
-                            {key: 'address', label: '地址', type: 'text'},
-                            {key: 'contact_person', label: '联系人', type: 'text'},
-                            {key: 'contact_phone', label: '联系方式', type: 'text'},
-                            {key: 'region', label: '区域', type: 'text'},
+                            {key: 'point_code', labelKey: 'field.point_code', type: 'text', required: true},
+                            {key: 'name', labelKey: 'field.name', type: 'text', required: true},
+                            {key: 'address', labelKey: 'field.address', type: 'text'},
+                            {key: 'contact_person', labelKey: 'field.contact_person', type: 'text'},
+                            {key: 'contact_phone', labelKey: 'field.contact_phone', type: 'text'},
+                            {key: 'region', labelKey: 'field.region', type: 'text'},
                         ]
                     },
                     'sorting-tasks': {
-                        title: '分装任务', api: '/api/sorting/tasks',
+                        titleKey: 'page.sorting-tasks', api: '/api/sorting/tasks',
                         columns: [
-                            {key: 'task_no', label: '任务编号'}, {key: 'batch_no', label: '批次号'},
-                            {key: 'total_packages', label: '包裹数'}, {key: 'status', label: '状态', type: 'status'},
-                            {key: 'created_at', label: '创建时间', type: 'datetime'}
+                            {key: 'task_no', labelKey: 'col.task_no'}, {key: 'batch_no', labelKey: 'col.batch_no'},
+                            {key: 'total_packages', labelKey: 'col.total_packages'}, {key: 'status', labelKey: 'col.status', type: 'status'},
+                            {key: 'created_at', labelKey: 'col.created_at', type: 'datetime'}
                         ],
                         formFields: [
-                            {key: 'task_no', label: '任务编号', type: 'text', required: true},
-                            {key: 'batch_no', label: '批次号', type: 'text'},
-                            {key: 'point_id', label: '收件点ID', type: 'number'},
-                            {key: 'total_packages', label: '包裹数', type: 'number'},
-                            {key: 'total_weight', label: '总重量', type: 'number'},
+                            {key: 'task_no', labelKey: 'field.task_no', type: 'text', required: true},
+                            {key: 'batch_no', labelKey: 'field.batch_no', type: 'text'},
+                            {key: 'point_id', labelKey: 'field.point_id', type: 'number'},
+                            {key: 'total_packages', labelKey: 'field.total_packages', type: 'number'},
+                            {key: 'total_weight', labelKey: 'field.total_weight', type: 'number'},
                         ]
                     },
                     'documents': {
-                        title: '文件管理', api: '/api/document/list',
+                        titleKey: 'page.documents', api: '/api/document/list',
                         columns: [
-                            {key: 'doc_no', label: '文件编号'}, {key: 'doc_type', label: '文件类型'},
-                            {key: 'title', label: '标题'}, {key: 'version', label: '版本'},
-                            {key: 'status', label: '状态', type: 'status'}, {key: 'created_at', label: '创建时间', type: 'datetime'}
+                            {key: 'doc_no', labelKey: 'col.doc_no'}, {key: 'doc_type', labelKey: 'col.doc_type'},
+                            {key: 'title', labelKey: 'col.title'}, {key: 'version', labelKey: 'col.version'},
+                            {key: 'status', labelKey: 'col.status', type: 'status'}, {key: 'created_at', labelKey: 'col.created_at', type: 'datetime'}
                         ],
                         formFields: [
-                            {key: 'doc_type', label: '文件类型', type: 'select', options: [
-                                {value: 'loading', label: '装车文件'}, {value: 'customs', label: '报关文件'},
-                                {value: 'invoice', label: '商业发票'}, {value: 'packing_list', label: '装箱单'}
+                            {key: 'doc_type', labelKey: 'field.doc_type', type: 'select', options: [
+                                {value: 'loading', labelKey: 'option.loading'}, {value: 'customs', labelKey: 'option.customs'},
+                                {value: 'invoice', labelKey: 'option.invoice'}, {value: 'packing_list', labelKey: 'option.packing_list'}
                             ], required: true},
-                            {key: 'title', label: '标题', type: 'text'},
-                            {key: 'batch_no', label: '批次号', type: 'text'},
+                            {key: 'title', labelKey: 'field.title', type: 'text'},
+                            {key: 'batch_no', labelKey: 'field.batch_no', type: 'text'},
                         ]
                     },
                     'transport-tasks': {
-                        title: '运输任务', api: '/api/transport/tasks',
+                        titleKey: 'page.transport-tasks', api: '/api/transport/tasks',
                         columns: [
-                            {key: 'task_no', label: '任务编号'}, {key: 'route_from', label: '出发地'},
-                            {key: 'route_to', label: '目的地'}, {key: 'status', label: '状态', type: 'status'},
-                            {key: 'created_at', label: '创建时间', type: 'datetime'}
+                            {key: 'task_no', labelKey: 'col.task_no'}, {key: 'route_from', labelKey: 'col.route_from'},
+                            {key: 'route_to', labelKey: 'col.route_to'}, {key: 'status', labelKey: 'col.status', type: 'status'},
+                            {key: 'created_at', labelKey: 'col.created_at', type: 'datetime'}
                         ],
                         formFields: [
-                            {key: 'task_no', label: '任务编号', type: 'text', required: true},
-                            {key: 'route_from', label: '出发地', type: 'text', required: true},
-                            {key: 'route_to', label: '目的地', type: 'text', required: true},
-                            {key: 'planned_departure', label: '计划出发', type: 'datetime-local'},
-                            {key: 'planned_arrival', label: '计划到达', type: 'datetime-local'},
+                            {key: 'task_no', labelKey: 'field.task_no', type: 'text', required: true},
+                            {key: 'route_from', labelKey: 'field.route_from', type: 'text', required: true},
+                            {key: 'route_to', labelKey: 'field.route_to', type: 'text', required: true},
+                            {key: 'planned_departure', labelKey: 'field.planned_departure', type: 'datetime-local'},
+                            {key: 'planned_arrival', labelKey: 'field.planned_arrival', type: 'datetime-local'},
                         ]
                     },
                     'transport-vehicles': {
-                        title: '车辆管理', api: '/api/transport/vehicles',
+                        titleKey: 'page.transport-vehicles', api: '/api/transport/vehicles',
                         columns: [
-                            {key: 'plate_no', label: '车牌号'}, {key: 'vehicle_type', label: '车辆类型'},
-                            {key: 'brand', label: '品牌'}, {key: 'load_weight', label: '载重(kg)'},
-                            {key: 'status', label: '状态', type: 'status'}
+                            {key: 'plate_no', labelKey: 'col.plate_no'}, {key: 'vehicle_type', labelKey: 'col.vehicle_type'},
+                            {key: 'brand', labelKey: 'col.brand'}, {key: 'load_weight', labelKey: 'col.load_weight'},
+                            {key: 'status', labelKey: 'col.status', type: 'status'}
                         ],
                         formFields: [
-                            {key: 'plate_no', label: '车牌号', type: 'text', required: true},
-                            {key: 'vehicle_type', label: '车辆类型', type: 'text'},
-                            {key: 'brand', label: '品牌', type: 'text'},
-                            {key: 'load_weight', label: '载重(kg)', type: 'number'},
+                            {key: 'plate_no', labelKey: 'field.plate_no', type: 'text', required: true},
+                            {key: 'vehicle_type', labelKey: 'field.vehicle_type', type: 'text'},
+                            {key: 'brand', labelKey: 'field.brand', type: 'text'},
+                            {key: 'load_weight', labelKey: 'field.load_weight', type: 'number'},
+                        ]
+                    },
+                    'transport-drivers': {
+                        titleKey: 'page.transport-drivers', api: '/api/transport/drivers',
+                        columns: [
+                            {key: 'name', labelKey: 'col.name'}, {key: 'phone', labelKey: 'col.phone'},
+                            {key: 'license_no', labelKey: 'col.license_no'}, {key: 'status', labelKey: 'col.status', type: 'status'}
+                        ],
+                        formFields: [
+                            {key: 'name', labelKey: 'field.name', type: 'text', required: true},
+                            {key: 'phone', labelKey: 'field.phone', type: 'text'},
+                            {key: 'license_no', labelKey: 'field.license_no', type: 'text'},
+                            {key: 'id_card', labelKey: 'field.id_card', type: 'text'},
                         ]
                     },
                     'customs': {
-                        title: '出口报关管理', api: '/api/customs/declarations',
+                        titleKey: 'page.customs', api: '/api/customs/declarations',
                         columns: [
-                            {key: 'declaration_no', label: '报关单号'}, {key: 'batch_no', label: '批次号'},
-                            {key: 'status', label: '状态', type: 'status'}, {key: 'submitted_at', label: '提交时间', type: 'datetime'}
+                            {key: 'declaration_no', labelKey: 'col.declaration_no'}, {key: 'batch_no', labelKey: 'col.batch_no'},
+                            {key: 'status', labelKey: 'col.status', type: 'status'}, {key: 'submitted_at', labelKey: 'col.submitted_at', type: 'datetime'}
                         ],
                         formFields: [
-                            {key: 'declaration_no', label: '报关单号', type: 'text', required: true},
-                            {key: 'batch_no', label: '批次号', type: 'text'},
-                            {key: 'transport_task_id', label: '运输任务ID', type: 'number'},
+                            {key: 'declaration_no', labelKey: 'field.declaration_no', type: 'text', required: true},
+                            {key: 'batch_no', labelKey: 'field.batch_no', type: 'text'},
+                            {key: 'transport_task_id', labelKey: 'field.transport_task_id', type: 'number'},
                         ]
                     },
                     'clearance': {
-                        title: '进口清关管理', api: '/api/clearance/records',
+                        titleKey: 'page.clearance', api: '/api/clearance/records',
                         columns: [
-                            {key: 'clearance_no', label: '清关编号'}, {key: 'batch_no', label: '批次号'},
-                            {key: 'status', label: '状态', type: 'status'}, {key: 'submitted_at', label: '提交时间', type: 'datetime'}
+                            {key: 'clearance_no', labelKey: 'col.clearance_no'}, {key: 'batch_no', labelKey: 'col.batch_no'},
+                            {key: 'status', labelKey: 'col.status', type: 'status'}, {key: 'submitted_at', labelKey: 'col.submitted_at', type: 'datetime'}
                         ],
                         formFields: [
-                            {key: 'clearance_no', label: '清关编号', type: 'text', required: true},
-                            {key: 'batch_no', label: '批次号', type: 'text'},
-                            {key: 'declaration_no', label: '报关单号', type: 'text'},
+                            {key: 'clearance_no', labelKey: 'field.clearance_no', type: 'text', required: true},
+                            {key: 'batch_no', labelKey: 'field.batch_no', type: 'text'},
+                            {key: 'declaration_no', labelKey: 'field.declaration_no', type: 'text'},
                         ]
                     },
                     'port-transport': {
-                        title: '口岸运输管理', api: '/api/port-transport/tasks',
+                        titleKey: 'page.port-transport', api: '/api/port-transport/tasks',
                         columns: [
-                            {key: 'task_no', label: '任务编号'}, {key: 'batch_no', label: '批次号'},
-                            {key: 'status', label: '状态', type: 'status'}, {key: 'departure_time', label: '出发时间', type: 'datetime'}
+                            {key: 'task_no', labelKey: 'col.task_no'}, {key: 'batch_no', labelKey: 'col.batch_no'},
+                            {key: 'status', labelKey: 'col.status', type: 'status'}, {key: 'departure_time', labelKey: 'col.departure_time', type: 'datetime'}
                         ],
                         formFields: [
-                            {key: 'task_no', label: '任务编号', type: 'text', required: true},
-                            {key: 'batch_no', label: '批次号', type: 'text'},
-                            {key: 'departure_time', label: '出发时间', type: 'datetime-local'},
-                            {key: 'estimated_arrival', label: '预计到达', type: 'datetime-local'},
+                            {key: 'task_no', labelKey: 'field.task_no', type: 'text', required: true},
+                            {key: 'batch_no', labelKey: 'field.batch_no', type: 'text'},
+                            {key: 'departure_time', labelKey: 'field.departure_time', type: 'datetime-local'},
+                            {key: 'estimated_arrival', labelKey: 'field.estimated_arrival', type: 'datetime-local'},
                         ]
                     },
                     'distribution': {
-                        title: '配送管理', api: '/api/distribution/tasks',
+                        titleKey: 'page.distribution', api: '/api/distribution/tasks',
                         columns: [
-                            {key: 'task_no', label: '任务编号'}, {key: 'package_count', label: '包裹数'},
-                            {key: 'status', label: '状态', type: 'status'}, {key: 'planned_time', label: '计划时间', type: 'datetime'}
+                            {key: 'task_no', labelKey: 'col.task_no'}, {key: 'package_count', labelKey: 'col.package_count'},
+                            {key: 'status', labelKey: 'col.status', type: 'status'}, {key: 'planned_time', labelKey: 'col.planned_time', type: 'datetime'}
                         ],
                         formFields: [
-                            {key: 'task_no', label: '任务编号', type: 'text', required: true},
-                            {key: 'point_id', label: '收件点ID', type: 'number'},
-                            {key: 'package_count', label: '包裹数', type: 'number'},
-                            {key: 'planned_time', label: '计划配送时间', type: 'datetime-local'},
+                            {key: 'task_no', labelKey: 'field.task_no', type: 'text', required: true},
+                            {key: 'point_id', labelKey: 'field.point_id', type: 'number'},
+                            {key: 'package_count', labelKey: 'field.package_count', type: 'number'},
+                            {key: 'planned_time', labelKey: 'field.planned_time', type: 'datetime-local'},
                         ]
                     },
                     'sign': {
-                        title: '签收入库管理', api: '/api/sign/records',
+                        titleKey: 'page.sign', api: '/api/sign/records',
                         columns: [
-                            {key: 'sign_no', label: '签收编号'}, {key: 'package_no', label: '包裹编号'},
-                            {key: 'signer', label: '签收人'}, {key: 'package_status', label: '包裹状态'},
-                            {key: 'sign_time', label: '签收时间', type: 'datetime'}
+                            {key: 'sign_no', labelKey: 'col.sign_no'}, {key: 'package_no', labelKey: 'col.package_no'},
+                            {key: 'signer', labelKey: 'col.signer'}, {key: 'package_status', labelKey: 'col.package_status'},
+                            {key: 'sign_time', labelKey: 'col.sign_time', type: 'datetime'}
                         ],
                         formFields: [
-                            {key: 'sign_no', label: '签收编号', type: 'text', required: true},
-                            {key: 'package_no', label: '包裹编号', type: 'text'},
-                            {key: 'point_id', label: '收件点ID', type: 'number'},
-                            {key: 'signer', label: '签收人', type: 'text'},
-                            {key: 'package_status', label: '包裹状态', type: 'select', options: [
-                                {value: 'normal', label: '正常'}, {value: 'damaged', label: '破损'}, {value: 'short', label: '短缺'}
+                            {key: 'sign_no', labelKey: 'field.sign_no', type: 'text', required: true},
+                            {key: 'package_no', labelKey: 'field.package_no', type: 'text'},
+                            {key: 'point_id', labelKey: 'field.point_id', type: 'number'},
+                            {key: 'signer', labelKey: 'field.signer', type: 'text'},
+                            {key: 'package_status', labelKey: 'field.package_status', type: 'select', options: [
+                                {value: 'normal', labelKey: 'option.normal'}, {value: 'damaged', labelKey: 'option.damaged'}, {value: 'short', labelKey: 'option.short'}
                             ]},
                         ]
                     },
                     'reconciliation': {
-                        title: '对账管理', api: '/api/reconciliation/records',
+                        titleKey: 'page.reconciliation', api: '/api/reconciliation/records',
                         columns: [
-                            {key: 'recon_no', label: '对账编号'}, {key: 'batch_no', label: '批次号'},
-                            {key: 'recon_type', label: '对账频率'}, {key: 'total_amount', label: '总金额'},
-                            {key: 'status', label: '状态', type: 'status'}
+                            {key: 'recon_no', labelKey: 'col.recon_no'}, {key: 'batch_no', labelKey: 'col.batch_no'},
+                            {key: 'recon_type', labelKey: 'col.recon_type'}, {key: 'total_amount', labelKey: 'col.total_amount'},
+                            {key: 'status', labelKey: 'col.status', type: 'status'}
                         ],
                         formFields: [
-                            {key: 'recon_no', label: '对账编号', type: 'text', required: true},
-                            {key: 'batch_no', label: '批次号', type: 'text'},
-                            {key: 'recon_type', label: '对账频率', type: 'select', options: [
-                                {value: 'daily', label: '日结'}, {value: 'weekly', label: '周结'}, {value: 'monthly', label: '月结'}
+                            {key: 'recon_no', labelKey: 'field.recon_no', type: 'text', required: true},
+                            {key: 'batch_no', labelKey: 'field.batch_no', type: 'text'},
+                            {key: 'recon_type', labelKey: 'field.recon_type', type: 'select', options: [
+                                {value: 'daily', labelKey: 'option.daily'}, {value: 'weekly', labelKey: 'option.weekly'}, {value: 'monthly', labelKey: 'option.monthly'}
                             ]},
-                            {key: 'total_amount', label: '总金额', type: 'number'},
+                            {key: 'total_amount', labelKey: 'field.total_amount', type: 'number'},
                         ]
                     },
                     'settlement': {
-                        title: '资金结算', api: '/api/settlement/orders',
+                        titleKey: 'page.settlement', api: '/api/settlement/orders',
                         columns: [
-                            {key: 'settlement_no', label: '结算编号'}, {key: 'total_amount', label: '结算金额'},
-                            {key: 'settlement_method', label: '结算方式'}, {key: 'status', label: '状态', type: 'status'}
+                            {key: 'settlement_no', labelKey: 'col.settlement_no'}, {key: 'total_amount', labelKey: 'col.total_amount'},
+                            {key: 'settlement_method', labelKey: 'col.settlement_method'}, {key: 'status', labelKey: 'col.status', type: 'status'}
                         ],
                         formFields: [
-                            {key: 'settlement_no', label: '结算编号', type: 'text', required: true},
-                            {key: 'recon_id', label: '对账记录ID', type: 'number'},
-                            {key: 'total_amount', label: '结算金额', type: 'number', required: true},
-                            {key: 'settlement_method', label: '结算方式', type: 'select', options: [
-                                {value: 'bank_transfer', label: '银行转账'}, {value: 'third_party', label: '第三方支付'}
+                            {key: 'settlement_no', labelKey: 'field.settlement_no', type: 'text', required: true},
+                            {key: 'recon_id', labelKey: 'field.recon_id', type: 'number'},
+                            {key: 'total_amount', labelKey: 'field.total_amount', type: 'number', required: true},
+                            {key: 'settlement_method', labelKey: 'field.settlement_method', type: 'select', options: [
+                                {value: 'bank_transfer', labelKey: 'option.bank_transfer'}, {value: 'third_party', labelKey: 'option.third_party'}
                             ]},
                         ]
                     },
                     'payment': {
-                        title: '支付开票', api: '/api/payment/records',
+                        titleKey: 'page.payment', api: '/api/payment/records',
                         columns: [
-                            {key: 'payment_no', label: '支付编号'}, {key: 'amount', label: '金额'},
-                            {key: 'payment_method', label: '支付方式'}, {key: 'status', label: '状态', type: 'status'}
+                            {key: 'payment_no', labelKey: 'col.payment_no'}, {key: 'amount', labelKey: 'col.amount'},
+                            {key: 'payment_method', labelKey: 'col.payment_method'}, {key: 'status', labelKey: 'col.status', type: 'status'}
                         ],
                         formFields: [
-                            {key: 'payment_no', label: '支付编号', type: 'text', required: true},
-                            {key: 'settlement_id', label: '结算单ID', type: 'number'},
-                            {key: 'amount', label: '金额', type: 'number', required: true},
-                            {key: 'payment_method', label: '支付方式', type: 'select', options: [
-                                {value: 'bank', label: '银行转账'}, {value: 'alipay', label: '支付宝'}, {value: 'wechat', label: '微信支付'}
+                            {key: 'payment_no', labelKey: 'field.payment_no', type: 'text', required: true},
+                            {key: 'settlement_id', labelKey: 'field.settlement_id', type: 'number'},
+                            {key: 'amount', labelKey: 'field.amount', type: 'number', required: true},
+                            {key: 'payment_method', labelKey: 'field.payment_method', type: 'select', options: [
+                                {value: 'bank', labelKey: 'option.bank'}, {value: 'alipay', labelKey: 'option.alipay'}, {value: 'wechat', labelKey: 'option.wechat'}
                             ]},
                         ]
                     },
                     'tracking': {
-                        title: '物流跟踪', api: '/api/tracking/list',
+                        titleKey: 'page.tracking', api: '/api/tracking/list',
                         columns: [
-                            {key: 'tracking_no', label: '跟踪编号'}, {key: 'order_no', label: '订单号'},
-                            {key: 'current_stage', label: '当前环节'}, {key: 'operator', label: '操作人'},
-                            {key: 'operation_time', label: '操作时间', type: 'datetime'}
+                            {key: 'tracking_no', labelKey: 'col.tracking_no'}, {key: 'order_no', labelKey: 'col.order_no'},
+                            {key: 'current_stage', labelKey: 'col.current_stage'}, {key: 'operator', labelKey: 'col.operator'},
+                            {key: 'operation_time', labelKey: 'col.operation_time', type: 'datetime'}
                         ]
                     },
                     'alerts': {
-                        title: '异常预警', api: '/api/alert/list',
+                        titleKey: 'page.alerts', api: '/api/alert/list',
                         columns: [
-                            {key: 'alert_no', label: '预警编号'}, {key: 'alert_type', label: '预警类型'},
-                            {key: 'alert_level', label: '级别'}, {key: 'description', label: '描述'},
-                            {key: 'status', label: '状态', type: 'status'}
+                            {key: 'alert_no', labelKey: 'col.alert_no'}, {key: 'alert_type', labelKey: 'col.alert_type'},
+                            {key: 'alert_level', labelKey: 'col.alert_level'}, {key: 'description', labelKey: 'col.description'},
+                            {key: 'status', labelKey: 'col.status', type: 'status'}
                         ],
                         formFields: [
-                            {key: 'alert_no', label: '预警编号', type: 'text', required: true},
-                            {key: 'alert_type', label: '预警类型', type: 'select', options: [
-                                {value: 'overdue_stay', label: '货物滞留超期'},
-                                {value: 'material_miss', label: '报关材料缺失'},
-                                {value: 'route_deviation', label: '运输轨迹偏离'},
-                                {value: 'package_damage', label: '包裹破损/丢失'},
-                                {value: 'sign_exception', label: '签收异常'},
-                                {value: 'recon_diff', label: '对账差异超标'},
+                            {key: 'alert_no', labelKey: 'field.alert_no', type: 'text', required: true},
+                            {key: 'alert_type', labelKey: 'field.alert_type', type: 'select', options: [
+                                {value: 'overdue_stay', labelKey: 'option.overdue_stay'},
+                                {value: 'material_miss', labelKey: 'option.material_miss'},
+                                {value: 'route_deviation', labelKey: 'option.route_deviation'},
+                                {value: 'package_damage', labelKey: 'option.package_damage'},
+                                {value: 'sign_exception', labelKey: 'option.sign_exception'},
+                                {value: 'recon_diff', labelKey: 'option.recon_diff'},
                             ]},
-                            {key: 'alert_level', label: '预警级别', type: 'select', options: [
-                                {value: 'low', label: '低'}, {value: 'medium', label: '中'}, {value: 'high', label: '高'}
+                            {key: 'alert_level', labelKey: 'field.alert_level', type: 'select', options: [
+                                {value: 'low', labelKey: 'option.low'}, {value: 'medium', labelKey: 'option.medium'}, {value: 'high', labelKey: 'option.high'}
                             ]},
-                            {key: 'description', label: '描述', type: 'textarea'},
+                            {key: 'description', labelKey: 'field.description', type: 'textarea'},
                         ]
                     },
                     'charging': {
-                        title: '计费规则', api: '/api/charging/rules',
+                        titleKey: 'page.charging', api: '/api/charging/rules',
                         columns: [
-                            {key: 'rule_name', label: '规则名称'}, {key: 'rule_type', label: '费用类型'},
-                            {key: 'calc_method', label: '计算方式'}, {key: 'priority', label: '优先级'},
-                            {key: 'status', label: '状态', type: 'status'}
+                            {key: 'rule_name', labelKey: 'col.rule_name'}, {key: 'rule_type', labelKey: 'col.rule_type'},
+                            {key: 'calc_method', labelKey: 'col.calc_method'}, {key: 'priority', labelKey: 'col.priority'},
+                            {key: 'status', labelKey: 'col.status', type: 'status'}
                         ],
                         formFields: [
-                            {key: 'rule_name', label: '规则名称', type: 'text', required: true},
-                            {key: 'rule_type', label: '费用类型', type: 'select', options: [
-                                {value: 'transport', label: '运输费'}, {value: 'storage', label: '仓储费'},
-                                {value: 'packaging', label: '包装费'}, {value: 'fuel_surcharge', label: '燃油附加费'}
+                            {key: 'rule_name', labelKey: 'field.rule_name', type: 'text', required: true},
+                            {key: 'rule_type', labelKey: 'field.rule_type', type: 'select', options: [
+                                {value: 'transport', labelKey: 'option.transport'}, {value: 'storage', labelKey: 'option.storage'},
+                                {value: 'packaging', labelKey: 'option.packaging'}, {value: 'fuel_surcharge', labelKey: 'option.fuel_surcharge'}
                             ]},
-                            {key: 'calc_method', label: '计算方式', type: 'select', options: [
-                                {value: 'fixed', label: '固定费用'}, {value: 'by_weight', label: '按重量'},
-                                {value: 'by_volume', label: '按体积'}, {value: 'by_quantity', label: '按数量'}
+                            {key: 'calc_method', labelKey: 'field.calc_method', type: 'select', options: [
+                                {value: 'fixed', labelKey: 'option.fixed'}, {value: 'by_weight', labelKey: 'option.by_weight'},
+                                {value: 'by_volume', labelKey: 'option.by_volume'}, {value: 'by_quantity', labelKey: 'option.by_quantity'}
                             ]},
-                            {key: 'priority', label: '优先级', type: 'number'},
+                            {key: 'priority', labelKey: 'field.priority', type: 'number'},
                         ]
                     },
                     'users': {
-                        title: '用户管理', api: '/api/auth/users',
+                        titleKey: 'page.users', api: '/api/auth/users',
                         columns: [
-                            {key: 'username', label: '用户名'}, {key: 'real_name', label: '真实姓名'},
-                            {key: 'email', label: '邮箱'}, {key: 'phone', label: '手机号'},
-                            {key: 'status', label: '状态', type: 'status'}
+                            {key: 'username', labelKey: 'col.username'}, {key: 'real_name', labelKey: 'col.real_name'},
+                            {key: 'email', labelKey: 'col.email'}, {key: 'phone', labelKey: 'col.phone'},
+                            {key: 'status', labelKey: 'col.status', type: 'status'}
                         ],
                         formFields: [
-                            {key: 'username', label: '用户名', type: 'text', required: true},
-                            {key: 'real_name', label: '真实姓名', type: 'text'},
-                            {key: 'password', label: '密码', type: 'password'},
-                            {key: 'email', label: '邮箱', type: 'email'},
-                            {key: 'phone', label: '手机号', type: 'text'},
-                            {key: 'role_id', label: '角色ID', type: 'number'},
+                            {key: 'username', labelKey: 'field.username', type: 'text', required: true},
+                            {key: 'real_name', labelKey: 'field.real_name', type: 'text'},
+                            {key: 'password', labelKey: 'field.password', type: 'password'},
+                            {key: 'email', labelKey: 'field.email', type: 'email'},
+                            {key: 'phone', labelKey: 'field.phone', type: 'text'},
+                            {key: 'role_id', labelKey: 'field.role_id', type: 'number'},
                         ]
                     },
                     'logs': {
-                        title: '操作日志', api: '/api/permission/logs',
+                        titleKey: 'page.logs', api: '/api/permission/logs',
                         columns: [
-                            {key: 'username', label: '操作人'}, {key: 'action', label: '操作'},
-                            {key: 'module', label: '模块'}, {key: 'target_desc', label: '操作对象'},
-                            {key: 'ip_address', label: 'IP地址'}, {key: 'operation_time', label: '操作时间', type: 'datetime'}
+                            {key: 'username', labelKey: 'col.username'}, {key: 'action', labelKey: 'col.action'},
+                            {key: 'module', labelKey: 'col.module'}, {key: 'target_desc', labelKey: 'col.target_desc'},
+                            {key: 'ip_address', labelKey: 'col.ip_address'}, {key: 'operation_time', labelKey: 'col.operation_time', type: 'datetime'}
                         ]
                     }
                 };
@@ -1447,38 +1760,7 @@
                 }
 
                 function getStatusLabel(status) {
-                    const labels = {
-                        'pending': '待处理', 'processing': '处理中', 'completed': '已完成',
-                        'approved': '已通过', 'rejected': '已驳回', 'in_transit': '运输中',
-                        'active': '启用', 'inactive': '停用', 'normal': '正常',
-                        'confirmed': '已确认', 'draft': '草稿', 'final': '定稿',
-                        'pending_audit': '待审核', 'pending_payment': '待支付', 'paid': '已支付',
-                        'resolved': '已解决', 'exception': '异常', 'stored': '已入库',
-                        'collecting': '集货中', 'sorted': '已分装', 'transporting': '运输中',
-                        'customs': '报关中', 'cleared': '已清关', 'distributing': '配送中',
-                        'signed': '已签收', 'dispatching': '配送中', 'arrived': '已到达',
-                        'idle': '空闲', 'working': '工作中', 'offline': '离线', 'online': '在线',
-                        'driving': '驾驶中', 'rest': '休息', 'in_transit': '运输中',
-                        'maintenance': '维修中', 'scan': '扫码签收', 'manual': '手动签收',
-                        'damaged': '破损', 'short': '短缺', 'failed': '失败',
-                        'delivered': '已送达', 'sorted': '已分装',
-                        'pending_audit': '待审核', 'pending_payment': '待支付',
-                        'success': '成功', 'failed': '失败',
-                        'overdue_stay': '滞留超期', 'material_miss': '材料缺失',
-                        'route_deviation': '偏离路线', 'package_damage': '包裹破损',
-                        'sign_exception': '签收异常', 'recon_diff': '对账差异',
-                        'low': '低', 'medium': '中', 'high': '高',
-                        'loading': '装车文件', 'customs': '报关文件',
-                        'invoice': '商业发票', 'packing_list': '装箱单',
-                        'daily': '日结', 'weekly': '周结', 'monthly': '月结',
-                        'bank_transfer': '银行转账', 'third_party': '第三方支付',
-                        'bank': '银行转账', 'alipay': '支付宝', 'wechat': '微信支付',
-                        'transport': '运输费', 'storage': '仓储费', 'packaging': '包装费',
-                        'fuel_surcharge': '燃油附加费',
-                        'fixed': '固定费用', 'by_weight': '按重量', 'by_volume': '按体积',
-                        'by_quantity': '按数量', 'ladder': '阶梯定价', 'max_vol_weight': '体积重量取大',
-                    };
-                    return labels[status] || status;
+                    return I18n.t('status.' + status) || status;
                 }
 
                 function formatDate(dateStr) {
@@ -1487,6 +1769,88 @@
                     if (dateStr.length > 19) dateStr = dateStr.substring(0, 19);
                     return dateStr;
                 }
+
+                // ===== Toast通知系统 =====
+                function showToast(message, type) {
+                    type = type || 'success';
+                    const container = document.getElementById('toastContainer');
+                    if (!container) return;
+                    const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+                    const toast = document.createElement('div');
+                    toast.className = 'toast-notification toast-' + type;
+                    toast.innerHTML = '<i class="fas ' + (icons[type] || icons.info) + '"></i>' +
+                        '<span>' + message + '</span>' +
+                        '<button class="toast-close" onclick="this.parentElement.remove()">&times;</button>';
+                    container.appendChild(toast);
+                    setTimeout(() => {
+                        toast.style.animation = 'slideOutRight 0.3s ease';
+                        setTimeout(() => toast.remove(), 300);
+                    }, 3500);
+                }
+
+                // ===== 暗色模式 =====
+                const isDarkMode = ref(localStorage.getItem('darkMode') === 'true');
+                if (isDarkMode.value) {
+                    document.body.classList.add('dark-mode');
+                }
+                function toggleDarkMode() {
+                    isDarkMode.value = !isDarkMode.value;
+                    document.body.classList.toggle('dark-mode', isDarkMode.value);
+                    localStorage.setItem('darkMode', isDarkMode.value ? 'true' : 'false');
+                }
+
+                // ===== 侧边栏切换 =====
+                const sidebarCollapsed = ref(false);
+                function toggleSidebar() {
+                    if (window.innerWidth <= 768) {
+                        // 移动端：显示/隐藏
+                        const sidebar = document.querySelector('.sidebar');
+                        if (sidebar) {
+                            const isHidden = sidebar.style.width === '0px' || sidebar.style.width === '0';
+                            sidebar.style.width = isHidden ? 'var(--sidebar-width)' : '0';
+                            sidebar.style.overflow = isHidden ? 'auto' : 'hidden';
+                        }
+                    } else {
+                        // 桌面端：折叠/展开
+                        sidebarCollapsed.value = !sidebarCollapsed.value;
+                        const sidebar = document.querySelector('.sidebar');
+                        const mainContent = document.querySelector('.main-content');
+                        if (sidebar) {
+                            sidebar.style.width = sidebarCollapsed.value ? '60px' : 'var(--sidebar-width)';
+                            // 隐藏/显示品牌文字和菜单文字
+                            sidebar.querySelectorAll('.brand-text, .brand-sub, .menu-section-label, .menu-item span:not(.menu-badge), .menu-sub').forEach(el => {
+                                el.style.display = sidebarCollapsed.value ? 'none' : '';
+                            });
+                            sidebar.querySelectorAll('.menu-item').forEach(el => {
+                                el.style.justifyContent = sidebarCollapsed.value ? 'center' : '';
+                                el.style.padding = sidebarCollapsed.value ? '11px 0' : '';
+                            });
+                            sidebar.querySelectorAll('.menu-section-label').forEach(el => {
+                                el.style.display = sidebarCollapsed.value ? 'none' : '';
+                            });
+                            // 隐藏底部折叠按钮的文字
+                            const collapseBtn = sidebar.querySelector('[style*="margin-top:auto"]');
+                            if (collapseBtn) {
+                                collapseBtn.style.display = sidebarCollapsed.value ? 'none' : '';
+                            }
+                        }
+                        if (mainContent) {
+                            mainContent.style.marginLeft = sidebarCollapsed.value ? '60px' : '';
+                        }
+                    }
+                }
+                // 窗口大小变化时自动处理
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth > 768) {
+                        const mainContent = document.querySelector('.main-content');
+                        if (mainContent) mainContent.style.marginLeft = '';
+                    } else {
+                        const sidebar = document.querySelector('.sidebar');
+                        if (sidebar && sidebar.style.width !== '0px') {
+                            sidebar.style.width = '';
+                        }
+                    }
+                });
 
                 // ===== 验证码 =====
                 async function loadCaptcha() {
@@ -1523,7 +1887,10 @@
                             localStorage.setItem('auth_token', d.token);
                             needCaptcha.value = false;
                             isLoggedIn.value = true;
-                            loadDashboard();
+                            // 延迟加载仪表盘，等待 DOM 更新
+                            setTimeout(() => {
+                                loadDashboard();
+                            }, 100);
                         } else {
                             loginError.value = res.data.message;
                             if (res.data.need_captcha) {
@@ -1540,7 +1907,7 @@
                                 loadCaptcha();
                             }
                         } else {
-                            loginError.value = '登录失败，请检查网络';
+                            loginError.value = I18n.t('login.error.network');
                         }
                     } finally {
                         loginLoading.value = false;
@@ -1561,9 +1928,21 @@
                     currentPage.value = page;
                     const config = pageConfigs[page];
                     if (config) {
-                        pageTitle.value = config.title;
-                        tableColumns.value = config.columns;
-                        addFormFields.value = config.formFields || [];
+                        pageTitle.value = I18n.t(config.titleKey || 'page.' + page);
+                        // Translate column labels
+                        tableColumns.value = getTranslatedColumns(config.columns);
+                        // Translate form field labels and option labels
+                        addFormFields.value = (config.formFields || []).map(f => {
+                            const field = {...f};
+                            field.label = I18n.t(f.labelKey || 'field.' + f.key);
+                            if (field.options) {
+                                field.options = field.options.map(opt => ({
+                                    ...opt,
+                                    label: I18n.t(opt.labelKey || 'option.' + opt.value)
+                                }));
+                            }
+                            return field;
+                        });
                         searchKeyword.value = '';
                         currentPageNum.value = 1;
                         showAddForm.value = false;
@@ -1571,7 +1950,7 @@
                         showDetailModal.value = false;
                         loadData();
                     } else if (page === 'dashboard') {
-                        pageTitle.value = '仪表盘';
+                        pageTitle.value = I18n.t('dashboard.title');
                         loadDashboard();
                     }
                 }
@@ -1584,6 +1963,7 @@
                 async function loadData() {
                     const config = pageConfigs[currentPage.value];
                     if (!config) return;
+                    tableLoading.value = true;
                     try {
                         const params = { page: currentPageNum.value, per_page: 20 };
                         if (searchKeyword.value) params.keyword = searchKeyword.value;
@@ -1598,6 +1978,9 @@
                     } catch (err) {
                         console.error('加载数据失败:', err);
                         tableData.value = [];
+                        showToast(I18n.t('common.loadFail'), 'error');
+                    } finally {
+                        tableLoading.value = false;
                     }
                 }
 
@@ -1607,12 +1990,12 @@
                         if (res.data.code === 200) {
                             const d = res.data.data;
                             dashboardStats.value = [
-                                { label: '集货登记', value: d.warehouse.total, icon: 'fas fa-warehouse', bg: '#eff6ff', color: '#3b82f6', period: '总计' },
-                                { label: '分装完成率', value: (d.sorting.rate || 0) + '%', icon: 'fas fa-sort', bg: '#f0fdf4', color: '#22c55e', period: (d.sorting.completed || 0) + '/' + (d.sorting.total || 0) },
-                                { label: '运输中', value: d.transport.in_transit || 0, icon: 'fas fa-truck', bg: '#fefce8', color: '#eab308', period: '共' + (d.transport.total || 0) + '单' },
-                                { label: '报关通过率', value: (d.customs.rate || 0) + '%', icon: 'fas fa-passport', bg: '#fef2f2', color: '#ef4444', period: (d.customs.approved || 0) + '/' + (d.customs.total || 0) },
-                                { label: '配送完成率', value: (d.distribution.rate || 0) + '%', icon: 'fas fa-truck-fast', bg: '#f5f3ff', color: '#8b5cf6', period: (d.distribution.completed || 0) + '/' + (d.distribution.total || 0) },
-                                { label: '签收总数', value: d.sign.total || 0, icon: 'fas fa-signature', bg: '#ecfeff', color: '#06b6d4', period: '总计' },
+                                { label: I18n.t('dashboard.stat.warehouse'), value: d.warehouse.total, icon: 'fas fa-warehouse', bg: '#eff6ff', color: '#3b82f6', period: I18n.t('dashboard.stat.total') },
+                                { label: I18n.t('dashboard.stat.sorting'), value: (d.sorting.rate || 0) + '%', icon: 'fas fa-sort', bg: '#f0fdf4', color: '#22c55e', period: (d.sorting.completed || 0) + '/' + (d.sorting.total || 0) },
+                                { label: I18n.t('dashboard.stat.inTransit'), value: d.transport.in_transit || 0, icon: 'fas fa-truck', bg: '#fefce8', color: '#eab308', period: I18n.t('dashboard.stat.totalOrders', {count: d.transport.total || 0}) },
+                                { label: I18n.t('dashboard.stat.customs'), value: (d.customs.rate || 0) + '%', icon: 'fas fa-passport', bg: '#fef2f2', color: '#ef4444', period: (d.customs.approved || 0) + '/' + (d.customs.total || 0) },
+                                { label: I18n.t('dashboard.stat.distribution'), value: (d.distribution.rate || 0) + '%', icon: 'fas fa-truck-fast', bg: '#f5f3ff', color: '#8b5cf6', period: (d.distribution.completed || 0) + '/' + (d.distribution.total || 0) },
+                                { label: I18n.t('dashboard.stat.sign'), value: d.sign.total || 0, icon: 'fas fa-signature', bg: '#ecfeff', color: '#06b6d4', period: I18n.t('dashboard.stat.total') },
                             ];
                         }
                     } catch (err) {
@@ -1640,12 +2023,12 @@
                         if (res.data.code === 200) {
                             showAddForm.value = false;
                             loadData();
-                            alert('创建成功！');
+                            showToast(I18n.t('common.createSuccess'));
                         } else {
-                            alert(res.data.message || '创建失败');
+                            showToast(res.data.message || I18n.t('common.createFail'), 'error');
                         }
                     } catch (err) {
-                        alert(err.response?.data?.message || '创建失败，请重试');
+                        showToast(err.response?.data?.message || I18n.t('common.createFail') + '，' + I18n.t('common.retry'), 'error');
                     }
                 }
 
@@ -1666,18 +2049,18 @@
                             showEditForm.value = false;
                             editingItem.value = null;
                             loadData();
-                            alert('更新成功！');
+                            showToast(I18n.t('common.updateSuccess'));
                         } else {
-                            alert(res.data.message || '更新失败');
+                            showToast(res.data.message || I18n.t('common.updateFail'), 'error');
                         }
                     } catch (err) {
-                        alert(err.response?.data?.message || '更新失败，请重试');
+                        showToast(err.response?.data?.message || I18n.t('common.updateFail') + '，' + I18n.t('common.retry'), 'error');
                     }
                 }
 
                 // ===== 删除 =====
                 async function deleteItem(item) {
-                    if (!confirm('确认删除该记录？此操作不可恢复。')) return;
+                    if (!confirm(I18n.t('common.confirmDelete'))) return;
                     const config = pageConfigs[currentPage.value];
                     if (!config) return;
                     try {
@@ -1685,12 +2068,44 @@
                         const res = await axiosInstance.delete(apiUrl);
                         if (res.data.code === 200) {
                             loadData();
-                            alert('删除成功！');
+                            showToast(I18n.t('common.deleteSuccess'));
                         } else {
-                            alert(res.data.message || '删除失败');
+                            showToast(res.data.message || I18n.t('common.deleteFail'), 'error');
                         }
                     } catch (err) {
-                        alert(err.response?.data?.message || '删除失败，请重试');
+                        showToast(err.response?.data?.message || I18n.t('common.deleteFail') + '，' + I18n.t('common.retry'), 'error');
+                    }
+                }
+
+                // ===== 导出 =====
+                async function exportData() {
+                    const config = pageConfigs[currentPage.value];
+                    if (!config || tableData.value.length === 0) return;
+                    try {
+                        const res = await axiosInstance.post('/api/export', {
+                            data: tableData.value,
+                            filename: currentPage.value,
+                            format: 'csv'
+                        }, { responseType: 'blob' });
+                        // 从Content-Disposition获取文件名
+                        const disposition = res.headers['content-disposition'];
+                        let filename = currentPage.value + '_' + new Date().toISOString().slice(0, 10) + '.csv';
+                        if (disposition) {
+                            const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                            if (match) filename = match[1].replace(/['"]/g, '');
+                        }
+                        // 创建下载链接（res.data已是Blob）
+                        const url = URL.createObjectURL(res.data);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        showToast(I18n.t('common.exportSuccess'));
+                    } catch (err) {
+                        showToast(I18n.t('common.exportFail'), 'error');
                     }
                 }
 
@@ -1698,6 +2113,283 @@
                 function viewDetail(item) {
                     detailItem.value = item;
                     showDetailModal.value = true;
+                }
+
+                // ===== 自定义操作按钮 =====
+                const customActions = {
+                    'warehouse-receipt': {
+                        show: (item) => item.status === 'pending',
+                        title: I18n.t('common.confirm'),
+                        icon: 'fas fa-check',
+                        action: async (item) => {
+                            const res = await axiosInstance.post(`/api/warehouse/receipts/${item.id}/confirm`);
+                            if (res.data.code === 200) {
+                                loadData();
+                                showToast(I18n.t('common.operateSuccess'));
+                            }
+                        }
+                    },
+                    'transport-tasks': {
+                        show: (item) => item.status === 'pending',
+                        title: I18n.t('common.start'),
+                        icon: 'fas fa-play',
+                        action: async (item) => {
+                            const res = await axiosInstance.post(`/api/transport/tasks/${item.id}/start`);
+                            if (res.data.code === 200) {
+                                loadData();
+                                showToast(I18n.t('common.operateSuccess'));
+                            }
+                        }
+                    },
+                    'sorting-tasks': {
+                        show: (item) => item.status === 'pending' || item.status === 'sorting',
+                        title: I18n.t('common.complete'),
+                        icon: 'fas fa-check-double',
+                        action: async (item) => {
+                            const res = await axiosInstance.post(`/api/sorting/tasks/${item.id}/complete`);
+                            if (res.data.code === 200) {
+                                loadData();
+                                showToast(I18n.t('common.operateSuccess'));
+                            }
+                        }
+                    },
+                    'customs': {
+                        show: (item) => item.status === 'pending' || item.status === 'reviewing',
+                        title: I18n.t('common.approve'),
+                        icon: 'fas fa-check-circle',
+                        action: async (item) => {
+                            const res = await axiosInstance.post(`/api/customs/declarations/${item.id}/review`, {status: 'approved'});
+                            if (res.data.code === 200) {
+                                loadData();
+                                showToast(I18n.t('common.operateSuccess'));
+                            }
+                        }
+                    },
+                    'clearance': {
+                        show: (item) => item.status === 'pending' || item.status === 'processing',
+                        title: I18n.t('common.clear'),
+                        icon: 'fas fa-clipboard-check',
+                        action: async (item) => {
+                            const res = await axiosInstance.post(`/api/clearance/records/${item.id}/clear`);
+                            if (res.data.code === 200) {
+                                loadData();
+                                showToast(I18n.t('common.operateSuccess'));
+                            }
+                        }
+                    },
+                    'distribution': {
+                        show: (item) => item.status === 'pending',
+                        title: I18n.t('common.start'),
+                        icon: 'fas fa-play',
+                        action: async (item) => {
+                            const res = await axiosInstance.post(`/api/distribution/tasks/${item.id}/start`);
+                            if (res.data.code === 200) {
+                                loadData();
+                                showToast(I18n.t('common.operateSuccess'));
+                            }
+                        }
+                    },
+                    'sign': {
+                        show: (item) => item.status === 'signed',
+                        title: I18n.t('common.store'),
+                        icon: 'fas fa-archive',
+                        action: async (item) => {
+                            const res = await axiosInstance.post(`/api/sign/records/${item.id}/store`);
+                            if (res.data.code === 200) {
+                                loadData();
+                                showToast(I18n.t('common.operateSuccess'));
+                            }
+                        }
+                    },
+                    'reconciliation': {
+                        show: (item) => item.status === 'pending' || item.status === 'processing',
+                        title: I18n.t('common.confirm'),
+                        icon: 'fas fa-check',
+                        action: async (item) => {
+                            const res = await axiosInstance.post(`/api/reconciliation/records/${item.id}/confirm`);
+                            if (res.data.code === 200) {
+                                loadData();
+                                showToast(I18n.t('common.operateSuccess'));
+                            }
+                        }
+                    },
+                    'settlement': {
+                        show: (item) => item.status === 'pending_audit',
+                        title: I18n.t('common.audit'),
+                        icon: 'fas fa-check-circle',
+                        action: async (item) => {
+                            const res = await axiosInstance.post(`/api/settlement/orders/${item.id}/audit`, {status: 'pending_payment'});
+                            if (res.data.code === 200) {
+                                loadData();
+                                showToast(I18n.t('common.operateSuccess'));
+                            }
+                        }
+                    },
+                    'port-transport': {
+                        show: (item) => item.status === 'pending' || item.status === 'in_transit',
+                        title: I18n.t('common.sendAlert'),
+                        icon: 'fas fa-bell',
+                        action: async (item) => {
+                            const res = await axiosInstance.post(`/api/port-transport/tasks/${item.id}/send-alert`);
+                            if (res.data.code === 200) {
+                                loadData();
+                                showToast(I18n.t('common.operateSuccess'));
+                            }
+                        }
+                    },
+                    'charging': {
+                        show: (item) => true,
+                        title: I18n.t('common.toggle'),
+                        icon: 'fas fa-power-off',
+                        action: async (item) => {
+                            const res = await axiosInstance.post(`/api/charging/rules/${item.id}/toggle`);
+                            if (res.data.code === 200) {
+                                loadData();
+                                showToast(I18n.t('common.operateSuccess'));
+                            }
+                        }
+                    }
+                };
+
+                function getCustomAction(item) {
+                    const config = customActions[currentPage.value];
+                    if (config && config.show(item)) {
+                        return config;
+                    }
+                    return null;
+                }
+
+                async function customAction(item) {
+                    const config = customActions[currentPage.value];
+                    if (config && config.show(item)) {
+                        if (!confirm(I18n.t('common.confirmAction'))) return;
+                        try {
+                            await config.action(item);
+                        } catch (err) {
+                            alert(err.response?.data?.message || I18n.t('common.operateFail'));
+                        }
+                    }
+                }
+
+                // ===== 导入功能 =====
+                const showImportDialog = ref(false);
+                const importFileName = ref('');
+                const importFile = ref(null);
+                const importLoading = ref(false);
+                const importResult = ref(null);
+
+                function getImportApiUrl() {
+                    const config = pageConfigs[currentPage.value];
+                    if (!config) return null;
+                    return config.api + '/import';
+                }
+
+                function getImportTemplateApiUrl() {
+                    const config = pageConfigs[currentPage.value];
+                    if (!config) return null;
+                    return config.api + '/import/template';
+                }
+
+                function openImportDialog() {
+                    showImportDialog.value = true;
+                    importFileName.value = '';
+                    importFile.value = null;
+                    importResult.value = null;
+                    importLoading.value = false;
+                }
+
+                function resetImportDialog() {
+                    showImportDialog.value = false;
+                    importFileName.value = '';
+                    importFile.value = null;
+                    importResult.value = null;
+                    importLoading.value = false;
+                }
+
+                function onImportFileChange(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        importFileName.value = file.name;
+                        importFile.value = file;
+                        importResult.value = null;
+                    }
+                }
+
+                function handleFileDrop(event) {
+                    const file = event.dataTransfer.files[0];
+                    if (file) {
+                        importFileName.value = file.name;
+                        importFile.value = file;
+                        importResult.value = null;
+                    }
+                    event.currentTarget.style.borderColor = '#e2e8f0';
+                }
+
+                async function downloadImportTemplate() {
+                    const url = getImportTemplateApiUrl();
+                    if (!url) {
+                        showToast(I18n.t('common.import.noTemplate'), 'warning');
+                        return;
+                    }
+                    try {
+                        const res = await axiosInstance.get(url, { responseType: 'blob' });
+                        const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                        const downloadUrl = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = downloadUrl;
+                        // 从响应头获取文件名或使用默认名
+                        const disposition = res.headers['content-disposition'];
+                        let filename = currentPage.value + '_导入模板.xlsx';
+                        if (disposition) {
+                            const match = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                            if (match) filename = match[1].replace(/['"]/g, '');
+                        }
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(downloadUrl);
+                        showToast(I18n.t('common.import.templateDownloaded'));
+                    } catch (err) {
+                        showToast(I18n.t('common.import.templateFail'), 'error');
+                    }
+                }
+
+                async function submitImport() {
+                    if (!importFile.value) {
+                        showToast(I18n.t('common.import.selectFile'), 'warning');
+                        return;
+                    }
+                    const url = getImportApiUrl();
+                    if (!url) return;
+
+                    importLoading.value = true;
+                    importResult.value = null;
+                    try {
+                        const formData = new FormData();
+                        formData.append('file', importFile.value);
+                        const res = await axiosInstance.post(url, formData, {
+                            headers: { 'Content-Type': 'multipart/form-data' },
+                            timeout: 120000
+                        });
+                        if (res.data.code === 200) {
+                            importResult.value = res.data.data;
+                            if (res.data.data.fail === 0) {
+                                showToast(res.data.message);
+                                loadData();  // 刷新列表
+                            } else {
+                                showToast(res.data.message, 'warning');
+                            }
+                        } else {
+                            showToast(res.data.message || I18n.t('common.import.fail'), 'error');
+                        }
+                    } catch (err) {
+                        const msg = err.response?.data?.message || I18n.t('common.import.fail');
+                        showToast(msg, 'error');
+                        importResult.value = { success: 0, fail: 0, total: 0, errors: [{row: 0, field: '', message: msg}] };
+                    } finally {
+                        importLoading.value = false;
+                    }
                 }
 
                 // ===== 检查登录状态 =====
@@ -1712,7 +2404,9 @@
                         if (res.data.code === 200 && res.data.logged_in) {
                             currentUser.value = res.data.data;
                             isLoggedIn.value = true;
-                            loadDashboard();
+                            setTimeout(() => {
+                                loadDashboard();
+                            }, 100);
                         } else {
                             localStorage.removeItem('auth_token');
                             isLoggedIn.value = false;
@@ -1729,10 +2423,11 @@
                     isLoggedIn, currentUser, currentPage, pageTitle,
                     loginForm, loginLoading, loginError,
                     needCaptcha, captchaImage, captchaCode, loadCaptcha,
-                    searchKeyword, tableData, tableColumns,
+                    searchKeyword, tableData, tableColumns, tableLoading,
                     currentPageNum, totalPages,
                     showAddForm, addFormData, addFormFields,
                     showEditForm, editingItem,
+                    showImportDialog, importFileName, importFile, importLoading, importResult,
                     showDetailModal, detailItem,
                     openSubmenus, dashboardStats, modules, alertCount,
                     showListPage, pageConfigs,
@@ -1741,10 +2436,19 @@
                     openAddForm, submitAddForm,
                     openEditForm, submitEditForm,
                     deleteItem, viewDetail,
-                    getStatusColor, getStatusLabel, formatDate
+                    getCustomAction, customAction,
+                    openImportDialog, onImportFileChange, handleFileDrop,
+                    downloadImportTemplate, submitImport, resetImportDialog,
+                    getStatusColor, getStatusLabel, formatDate,
+                    currentLang, switchLang,
+                    isDarkMode, toggleDarkMode, sidebarCollapsed, toggleSidebar,
+                    I18n: I18n,
                 };
             }
         });
+
+        // 注册全局 $t 方法
+        app.config.globalProperties.$t = (key, params) => I18n.t(key, params);
 
         app.mount('#app');
     </script>
