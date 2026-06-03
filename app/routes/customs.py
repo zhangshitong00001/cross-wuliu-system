@@ -30,7 +30,14 @@ def list_declarations():
     batch_no = request.args.get('batch_no')
     if batch_no:
         query = query.filter_by(batch_no=batch_no)
-    
+
+    keyword = request.args.get('keyword')
+    if keyword:
+        query = query.filter(
+            (CustomsDeclaration.declaration_no.ilike(f'%{keyword}%')) |
+            (CustomsDeclaration.batch_no.ilike(f'%{keyword}%'))
+        )
+
     pagination = query.order_by(CustomsDeclaration.created_at.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )

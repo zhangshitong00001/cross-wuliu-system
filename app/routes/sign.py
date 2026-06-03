@@ -30,7 +30,15 @@ def list_records():
     package_no = request.args.get('package_no')
     if package_no:
         query = query.filter_by(package_no=package_no)
-    
+
+    keyword = request.args.get('keyword')
+    if keyword:
+        query = query.filter(
+            (SignRecord.sign_no.ilike(f'%{keyword}%')) |
+            (SignRecord.package_no.ilike(f'%{keyword}%')) |
+            (SignRecord.signer.ilike(f'%{keyword}%'))
+        )
+
     pagination = query.order_by(SignRecord.sign_time.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )

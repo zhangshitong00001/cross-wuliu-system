@@ -26,7 +26,15 @@ def list_tasks():
     status = request.args.get('status')
     if status:
         query = query.filter_by(status=status)
-    
+
+    keyword = request.args.get('keyword')
+    if keyword:
+        query = query.filter(
+            (TransportTask.task_no.ilike(f'%{keyword}%')) |
+            (TransportTask.route_from.ilike(f'%{keyword}%')) |
+            (TransportTask.route_to.ilike(f'%{keyword}%'))
+        )
+
     pagination = query.order_by(TransportTask.created_at.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )

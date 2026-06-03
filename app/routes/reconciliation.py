@@ -31,6 +31,13 @@ def list_records():
     if recon_type:
         query = query.filter_by(recon_type=recon_type)
     
+    keyword = request.args.get('keyword')
+    if keyword:
+        query = query.filter(
+            (ReconciliationRecord.recon_no.ilike(f'%{keyword}%')) |
+            (ReconciliationRecord.batch_no.ilike(f'%{keyword}%'))
+        )
+
     pagination = query.order_by(ReconciliationRecord.created_at.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )

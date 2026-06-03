@@ -26,7 +26,13 @@ def list_payments():
     status = request.args.get('status')
     if status:
         query = query.filter_by(status=status)
-    
+
+    keyword = request.args.get('keyword')
+    if keyword:
+        query = query.filter(
+            (PaymentRecord.payment_no.ilike(f'%{keyword}%'))
+        )
+
     pagination = query.order_by(PaymentRecord.created_at.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )
@@ -108,7 +114,13 @@ def list_invoices():
     invoice_status = request.args.get('invoice_status')
     if invoice_status:
         query = query.filter_by(invoice_status=invoice_status)
-    
+
+    keyword = request.args.get('keyword')
+    if keyword:
+        query = query.filter(
+            (InvoiceRecord.invoice_no.ilike(f'%{keyword}%'))
+        )
+
     pagination = query.order_by(InvoiceRecord.created_at.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )

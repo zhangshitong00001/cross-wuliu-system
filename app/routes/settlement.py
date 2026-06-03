@@ -27,6 +27,12 @@ def list_orders():
     if status:
         query = query.filter_by(status=status)
     
+    keyword = request.args.get('keyword')
+    if keyword:
+        query = query.filter(
+            (SettlementOrder.settlementorder_no.ilike(f'%{keyword}%'))
+        )
+
     pagination = query.order_by(SettlementOrder.created_at.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )

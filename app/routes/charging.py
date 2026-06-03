@@ -31,6 +31,13 @@ def list_rules():
     if status:
         query = query.filter_by(status=status)
     
+    keyword = request.args.get('keyword')
+    if keyword:
+        query = query.filter(
+            (ChargingRule.rule_name.ilike(f'%{keyword}%')) |
+            (ChargingRule.rule_type.ilike(f'%{keyword}%'))
+        )
+
     pagination = query.order_by(ChargingRule.priority.asc()).paginate(
         page=page, per_page=per_page, error_out=False
     )

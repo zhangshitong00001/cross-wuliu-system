@@ -36,6 +36,13 @@ def list_alerts():
     if alert_level:
         query = query.filter_by(alert_level=alert_level)
     
+    keyword = request.args.get('keyword')
+    if keyword:
+        query = query.filter(
+            (AlertRecord.alert_no.ilike(f'%{keyword}%')) |
+            (AlertRecord.description.ilike(f'%{keyword}%'))
+        )
+
     pagination = query.order_by(AlertRecord.created_at.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )

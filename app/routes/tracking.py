@@ -73,6 +73,13 @@ def list_tracking():
     if batch_no:
         query = query.filter_by(batch_no=batch_no)
 
+    keyword = request.args.get('keyword')
+    if keyword:
+        query = query.filter(
+            (TrackingRecord.tracking_no.ilike(f'%{keyword}%')) |
+            (TrackingRecord.order_no.ilike(f'%{keyword}%'))
+        )
+
     pagination = query.order_by(TrackingRecord.operation_time.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )

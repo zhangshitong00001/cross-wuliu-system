@@ -31,6 +31,13 @@ def list_tasks():
     if point_id:
         query = query.filter_by(point_id=point_id)
     
+    keyword = request.args.get('keyword')
+    if keyword:
+        query = query.filter(
+            (DistributionTask.task_no.ilike(f'%{keyword}%')) |
+            (DistributionTask.batch_no.ilike(f'%{keyword}%'))
+        )
+
     pagination = query.order_by(DistributionTask.created_at.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )
